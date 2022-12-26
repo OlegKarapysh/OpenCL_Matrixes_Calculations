@@ -2,9 +2,10 @@
 //
 #define _CRT_SECURE_NO_WARNINGS
 
-#include "OpenCLInit.h"
-#include "OpenCLWork.h"
 #include <conio.h>
+#include "DeviceInfo.h"
+#include "FileWork.h"
+#include "OpenCLwork.h"
 
 typedef float vect_elem_type;
 typedef cl_float elem_buf_type;

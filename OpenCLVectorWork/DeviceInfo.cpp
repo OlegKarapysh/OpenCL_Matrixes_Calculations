@@ -1,29 +1,13 @@
+#include "DeviceInfo.h"
 
-#include "OpenCLInit.h"
-
-cl_int CreateCLContext(const cl_uint& n_devices, cl_device_id* devices_id, cl_context& context)
+bool GetCLDevicesList(const cl_device_type& device_type, const cl_platform_id& platform_id, cl_device_id*& devices_id, cl_uint& n_devices)
 {
-	cl_int error;
-	context = clCreateContext(NULL, n_devices, devices_id, NULL, NULL, &error);
-	return error;
-}
-
-cl_int CreateCLCommandQueue(const cl_device_id &device_id, const cl_context& context, cl_command_queue &command_queue)
-{
-	cl_int error;
-	command_queue = clCreateCommandQueue(context, device_id, 0, &error);
-	return error;
-}
-
-
-bool GetCLDevicesList(const cl_device_type& device_type, const cl_platform_id &platform_id, cl_device_id*& devices_id, cl_uint& n_devices)
-{
-	return (clGetDeviceIDs(platform_id, device_type, NULL, NULL, &n_devices) == CL_SUCCESS) && 
+	return (clGetDeviceIDs(platform_id, device_type, NULL, NULL, &n_devices) == CL_SUCCESS) &&
 		((devices_id = (cl_device_id*)malloc(n_devices * sizeof(cl_device_id))) != NULL)
 		&& (clGetDeviceIDs(platform_id, device_type, n_devices, devices_id, NULL) == CL_SUCCESS);
 }
 
-bool GetCLPlatformsList(cl_platform_id*& platforms_id, cl_uint &n_platforms)
+bool GetCLPlatformsList(cl_platform_id*& platforms_id, cl_uint& n_platforms)
 {
 	if (clGetPlatformIDs(NULL, NULL, &n_platforms) == CL_SUCCESS)
 	{
@@ -36,14 +20,22 @@ bool GetCLPlatformsList(cl_platform_id*& platforms_id, cl_uint &n_platforms)
 
 void OutCLPlatformsInfo(cl_platform_id* platforms_id, const cl_uint& n_platforms)
 {
-	const cl_platform_info PlAttrTypes[] = {
-												CL_PLATFORM_NAME,
-												CL_PLATFORM_VENDOR,
-												CL_PLATFORM_VERSION,
-												CL_PLATFORM_PROFILE,
-												CL_PLATFORM_EXTENSIONS
+	const cl_platform_info PlAttrTypes[] = 
+	{
+		CL_PLATFORM_NAME,
+		CL_PLATFORM_VENDOR,
+		CL_PLATFORM_VERSION,
+		CL_PLATFORM_PROFILE,
+		CL_PLATFORM_EXTENSIONS
 	};
-	const TCHAR* PlAttrNames[] = { __TEXT("Name"), __TEXT("Vendor"), __TEXT("Version"), __TEXT("Profile"), __TEXT("Extensions") };
+	const TCHAR* PlAttrNames[] = 
+	{ 
+		__TEXT("Name"), 
+		__TEXT("Vendor"), 
+		__TEXT("Version"),
+		__TEXT("Profile"),
+		__TEXT("Extensions") 
+	};
 
 	void* tmp, * param_value = NULL;
 	size_t size;
@@ -72,51 +64,69 @@ void OutCLPlatformsInfo(cl_platform_id* platforms_id, const cl_uint& n_platforms
 
 void OutCLDevicesInfo(cl_device_id* devices_id, const cl_uint& n_devices)
 {
-	const cl_device_info DevAttrTypesChar[] = {
-											CL_DEVICE_NAME,
-											CL_DEVICE_VENDOR,
-											CL_DEVICE_VERSION,
-											CL_DRIVER_VERSION,
-											CL_DEVICE_EXTENSIONS
+	const cl_device_info DevAttrTypesChar[] = 
+	{
+		CL_DEVICE_NAME,
+		CL_DEVICE_VENDOR,
+		CL_DEVICE_VERSION,
+		CL_DRIVER_VERSION,
+		CL_DEVICE_EXTENSIONS
 	};
 
-	const TCHAR* DevAttrNamesChar[] = { __TEXT("Name"), __TEXT("Vendor"), __TEXT("Device Version"), __TEXT("Driver Version"), __TEXT("Extensions") };
-
-	const cl_device_info DevAttrTypesUINT[] = {
-												CL_DEVICE_MAX_CLOCK_FREQUENCY,
-												CL_DEVICE_MAX_COMPUTE_UNITS,
-												CL_DEVICE_MAX_SAMPLERS,
-												CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS,
+	const TCHAR* DevAttrNamesChar[] = 
+	{ 
+		__TEXT("Name"), 
+		__TEXT("Vendor"),
+		__TEXT("Device Version"), 
+		__TEXT("Driver Version"),
+		__TEXT("Extensions") 
 	};
 
-
-
-	const cl_device_info DevAttrTypesULONG[] = {
-												CL_DEVICE_GLOBAL_MEM_SIZE,
-												CL_DEVICE_GLOBAL_MEM_CACHE_SIZE,
-												CL_DEVICE_MAX_CONSTANT_BUFFER_SIZE,
-												CL_DEVICE_MAX_MEM_ALLOC_SIZE
+	const cl_device_info DevAttrTypesUINT[] = 
+	{
+		CL_DEVICE_MAX_CLOCK_FREQUENCY,
+		CL_DEVICE_MAX_COMPUTE_UNITS,
+		CL_DEVICE_MAX_SAMPLERS,
+		CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS,
 	};
 
-	const cl_device_info DevAttrTypesSIZE_T[] = {
-												CL_DEVICE_MAX_PARAMETER_SIZE,
-												CL_DEVICE_MAX_WORK_GROUP_SIZE
+	const cl_device_info DevAttrTypesULONG[] = 
+	{
+		CL_DEVICE_GLOBAL_MEM_SIZE,
+		CL_DEVICE_GLOBAL_MEM_CACHE_SIZE,
+		CL_DEVICE_MAX_CONSTANT_BUFFER_SIZE,
+		CL_DEVICE_MAX_MEM_ALLOC_SIZE
 	};
 
-	const TCHAR* DevAttrNamesUINT[] = { __TEXT("Maximal frequency (MHz)"), __TEXT("Maximal compute units number"),
+	const cl_device_info DevAttrTypesSIZE_T[] = 
+	{
+		CL_DEVICE_MAX_PARAMETER_SIZE,
+		CL_DEVICE_MAX_WORK_GROUP_SIZE
+	};
+
+	const TCHAR* DevAttrNamesUINT[] = 
+	{ 
+		__TEXT("Maximal frequency (MHz)"), 
+		__TEXT("Maximal compute units number"),
 		__TEXT("Maximal number of samplers that can be used in kernel"),
 		__TEXT("Maximum dimensions that specify the global and local work-item IDs used by the data parallel execution mode")
 	};
-	const TCHAR* DevAttrNamesULONG[] = { __TEXT("Global memory size (bytes)"), __TEXT("Global memory cache size (bytes)"),
-		__TEXT("Maximal size of constant buffer allocation (bytes)"), __TEXT("Maximal size of memory object allocation (bytes)"),
+	const TCHAR* DevAttrNamesULONG[] = 
+	{ 
+		__TEXT("Global memory size (bytes)"),
+		__TEXT("Global memory cache size (bytes)"),
+		__TEXT("Maximal size of constant buffer allocation (bytes)"),
+		__TEXT("Maximal size of memory object allocation (bytes)"),
 	};
 
-	const TCHAR* DevAttrNamesSIZE_T[] = { __TEXT("Maximal size of arguments that can be passed to kernel (bytes)"),
+	const TCHAR* DevAttrNamesSIZE_T[] = 
+	{ 
+		__TEXT("Maximal size of arguments that can be passed to kernel (bytes)"),
 		__TEXT("Maximal number of work-items in a work-group executing a kernel using the data parallel execution model")
 	};
 
 
-	void *tmp, *param_value = NULL;
+	void* tmp, * param_value = NULL;
 	size_t size;
 	cl_uint value_uint;
 	cl_ulong value_ulong;

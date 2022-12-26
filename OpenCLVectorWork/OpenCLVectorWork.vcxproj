@@ -148,13 +148,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="OpenCLVectorWork.cpp" />
-    <ClCompile Include="OpenCLInit.cpp" />
-    <ClCompile Include="OpenCLWork.cpp" />
+    <ClCompile Include="DeviceInfo.cpp" />
+    <ClCompile Include="FileWork.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="OpenCLwork.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="OpenCLInit.h" />
-    <ClInclude Include="OpenCLWork.h" />
+    <ClInclude Include="DeviceInfo.h" />
+    <ClInclude Include="FileWork.h" />
+    <ClInclude Include="OpenCLwork.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="VectorAdd.cl" />

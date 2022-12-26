@@ -1,19 +1,17 @@
-#include "OpenCLWork.h"
+#include "OpenCLwork.h"
 
-bool ReadFileToChar(TCHAR* file_name, char*& file_data, DWORD &file_size)
+cl_int CreateCLContext(const cl_uint& n_devices, cl_device_id* devices_id, cl_context& context)
 {
-	HANDLE hFile = CreateFile(file_name, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, NULL);
+	cl_int error;
+	context = clCreateContext(NULL, n_devices, devices_id, NULL, NULL, &error);
+	return error;
+}
 
-	if (hFile != INVALID_HANDLE_VALUE)
-	{
-		DWORD file_size = GetFileSize(hFile, NULL), read_size;
-		file_data = (char*)malloc(file_size + 1);
-		ReadFile(hFile, file_data, file_size, &read_size, NULL);
-		file_data[file_size] = 0;
-		CloseHandle(hFile);
-		return file_size == read_size;
-	}
-	return false;
+cl_int CreateCLCommandQueue(const cl_device_id &device_id, const cl_context& context, cl_command_queue &command_queue)
+{
+	cl_int error;
+	command_queue = clCreateCommandQueue(context, device_id, 0, &error);
+	return error;
 }
 
 cl_int CreateCLProgram(const cl_context& context, const char** prog_string, cl_program& program)
@@ -28,14 +26,14 @@ cl_int BuildCLProgram(cl_program& program)
 	return clBuildProgram(program, 0, NULL, NULL, NULL, NULL);
 }
 
-cl_int CreateCLKernel(const cl_program& program, const char* kernel_name, cl_kernel &kernel)
+cl_int CreateCLKernel(const cl_program& program, const char* kernel_name, cl_kernel& kernel)
 {
 	cl_int error;
 	kernel = clCreateKernel(program, kernel_name, &error);
 	return error;
 }
 
-cl_int CreateCLBuffer(const cl_context& context, cl_mem_flags flags, size_t size, cl_mem &mem_obj)
+cl_int CreateCLBuffer(const cl_context& context, cl_mem_flags flags, size_t size, cl_mem& mem_obj)
 {
 	cl_int error;
 	mem_obj = clCreateBuffer(context, flags, size, NULL, &error);
@@ -47,7 +45,7 @@ cl_int SetCLKernelArgs(const cl_kernel& kernel, cl_uint index, size_t size, cons
 	return clSetKernelArg(kernel, index, size, value);
 }
 
-cl_int CopyCLDataToMemObj(const cl_command_queue &command_queue, cl_mem &buf, cl_bool blocking, size_t size, const void* value)
+cl_int CopyCLDataToMemObj(const cl_command_queue& command_queue, cl_mem& buf, cl_bool blocking, size_t size, const void* value)
 {
 	return clEnqueueWriteBuffer(command_queue, buf, blocking, 0, size, value, 0, NULL, NULL);
 }
