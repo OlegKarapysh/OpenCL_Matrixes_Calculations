@@ -156,12 +156,15 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DeviceInfo.h" />
+    <ClInclude Include="DynamicArray.h" />
     <ClInclude Include="FileWork.h" />
+    <ClInclude Include="DEFINES.h" />
+    <ClInclude Include="Matrix.h" />
     <ClInclude Include="PlatformInfo.h" />
     <ClInclude Include="OpenCLwork.h" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="VectorAdd.cl" />
+    <None Include="VectorAdd_float.cl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -20,15 +20,18 @@ bool ReadFileToChar(TCHAR* file_name, char*& file_data, DWORD& file_size)
 	return false;
 }
 
-bool WriteResultToFile(const float* res, const unsigned size)
+void WriteResultToFile(Matrix<INF>& result)
 {
-	FILE* F = _tfopen(OUT_FILE_NAME, __TEXT("w+"));
-	if (F)
+	FILE* resFile = _tfopen(OUT_FILE_NAME, __TEXT("w+"));
+	if (resFile)
 	{
-		fprintf(F, "The list of pairs: vector index - result value:\n");
-		for (unsigned i = 0; i < size; i++)
-			fprintf(F, "%u - %f\n", i, res[i]);
-		return true;
+		fprintf(resFile, "The list of pairs: matrix element index - result value:\n");
+		for (unsigned i = 0; i < result.GetHeight(); i++)
+		{
+			for (unsigned j = 0; j < result.GetWidth(); j++)
+			{
+				fprintf(resFile, "(%u, %u) - %f\n", i, j, result[i]);
+			}
+		}
 	}
-	return false;
 }

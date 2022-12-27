@@ -3,5 +3,8 @@
 #include <tchar.h>
 #include <stdio.h>
 
+#include "Matrix.h"
+#include "DEFINES.h"
+
 bool ReadFileToChar(TCHAR* file_name, char*& file_data, DWORD& file_size);
-bool WriteResultToFile(const float* res, const unsigned size);
+void WriteResultToFile(Matrix<INF>& result);

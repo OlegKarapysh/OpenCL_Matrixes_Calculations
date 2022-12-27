@@ -3,19 +3,14 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include <conio.h>
+
+#include "Matrix.h"
 #include "PlatformInfo.h"
 #include "DeviceInfo.h"
 #include "FileWork.h"
 #include "OpenCLwork.h"
+#include "DEFINES.h"
 
-typedef float vect_elem_type;
-typedef cl_float elem_buf_type;
-
-#define	KERNEL_FILE_NAME	__TEXT("VectorAdd.cl")
-#define	KERNEL_NAME			"VectorsAdd"
-
-
-#define N_ITER				100000
 
 unsigned char GetPlatformChoice(cl_uint n_platforms)
 {
@@ -48,6 +43,79 @@ unsigned char GetDeviceNumChoice(cl_uint n_devices)
 	return device_num;
 }
 
+void GetMatrixDimensionsFromUser(
+	unsigned& width
+	, unsigned& height
+	, unsigned& size
+)
+{
+	using namespace std;
+	cout << "Enter the width of the matrixes: ";
+	cin >> width;
+	cout << "Enter the height of the matrixes: ";
+	cin >> height;
+	size = width * height;
+}
+
+void InitMatrixes(
+	const unsigned width
+	, const unsigned height
+	, Matrix<INF>& matr1
+	, Matrix<INF>& matr2
+	, Matrix<INF>& matr3
+	, Matrix<INF>& matr4
+	, Matrix<INF>& matr5
+	, Matrix<INF>& result
+)
+{
+	matr1.Resize(width, height);
+	matr2.Resize(width, height);
+	matr3.Resize(width, height);
+	matr4.Resize(width, height);
+	matr5.Resize(width, height);
+	result.Resize(width, height);
+}
+
+unsigned GetMatrFillFromUser()
+{
+	using namespace std;
+	unsigned choice;
+	cout << endl << "Select filling type (default is 1):" << endl
+		<< "1. Random numbers" << endl
+		<< "2. Fixed number 5.5" << endl;
+	cin >> choice;
+	return choice;
+}
+
+void FillMatrByChoice(
+	unsigned choice
+	, unsigned width
+	, unsigned height
+	, Matrix<INF>& matr1
+	, Matrix<INF>& matr2
+	, Matrix<INF>& matr3
+	, Matrix<INF>& matr4
+	, Matrix<INF>& matr5
+)
+{
+	switch (choice)
+	{
+	case FILL_FIXED:
+		matr1.FillFixed(width, height, (INF)FIXED_NUM);
+		matr2.FillFixed(width, height, (INF)FIXED_NUM);
+		matr3.FillFixed(width, height, (INF)FIXED_NUM);
+		matr4.FillFixed(width, height, (INF)FIXED_NUM);
+		matr5.FillFixed(width, height, (INF)FIXED_NUM);
+		break;
+	default:
+		matr1.FillRandom(width, height, (INF)FIXED_NUM);
+		matr2.FillRandom(width, height, (INF)FIXED_NUM);
+		matr3.FillRandom(width, height, (INF)FIXED_NUM);
+		matr4.FillRandom(width, height, (INF)FIXED_NUM);
+		matr5.FillRandom(width, height, (INF)FIXED_NUM);
+	}
+}
+
 unsigned char GetFileOutputChoice()
 {
 	unsigned char choice = 1;
@@ -60,6 +128,24 @@ unsigned char GetFileOutputChoice()
 	return choice;
 }
 
+void WriteResultToFileByChoice(Matrix<INF>& result)
+{
+	using namespace std;
+
+	char writeToFileChoice = 'n';
+	cout << "Do you want to write the result to a file? [y/n]: ";
+	cin >> writeToFileChoice;
+
+	if (writeToFileChoice == 'y' || writeToFileChoice == 'Y')
+	{
+		WriteResultToFile(result);
+		cout << "The result has been written to file.";
+		return;
+	}
+
+	cout << "The result has not been written to file.";
+}
+
 int main()
 {
 	cl_uint n_platforms, n_devices;
@@ -69,19 +155,16 @@ int main()
 	cl_int error_code = 0;
 	unsigned char choice = 1;
 	unsigned char device_num = 1;
-
 	cl_context context;
 	cl_command_queue command_queue;
 	char* file_data = NULL;
 	DWORD file_size;
-
 	cl_program program;
 	cl_kernel kernel;
-
-	cl_mem buf_A, buf_B, buf_Res;
-	unsigned vector_size, calc_iter;
-
-	vect_elem_type *A = NULL, *B = NULL, *Res = NULL, value;
+	Matrix<INF> matr1, matr2, matr3, matr4, matr5, matrResult;
+	unsigned width, height, size;
+	cl_mem buf_m1, buf_m2, buf_m3, buf_m4, buf_m5, buf_Res;
+	ULONGLONG  timeCopy, timeCalc;
 
 	GetCLPlatformsList(platforms_id, n_platforms);
 	OutCLPlatformsInfo(platforms_id, n_platforms);
@@ -89,9 +172,8 @@ int main()
 	choice = GetPlatformChoice(n_platforms);
 
 	GetCLDevicesList(device_type, platforms_id[choice - 1], devices_id, n_devices);
-	OutCLDevicesInfo(devices_id, n_devices);
-
 	CreateCLContext(n_devices, devices_id, context);
+	OutCLDevicesInfo(devices_id, n_devices);
 	
 	device_num = GetDeviceNumChoice(n_devices);
 
@@ -106,55 +188,49 @@ int main()
 
 	CreateCLKernel(program, KERNEL_NAME, kernel);
 
-	_tprintf(__TEXT("Enter the number of vector elements: "));
-	_tscanf(__TEXT("%u"), &vector_size);
+	GetMatrixDimensionsFromUser(width, height, size);
+	InitMatrixes(width, height, matr1, matr2, matr3, matr4, matr5, matrResult);
 
-	CreateCLBuffer(context, CL_MEM_READ_ONLY, sizeof(elem_buf_type) * vector_size, buf_A);
-	CreateCLBuffer(context, CL_MEM_READ_ONLY, sizeof(elem_buf_type) * vector_size, buf_B);
-	CreateCLBuffer(context, CL_MEM_WRITE_ONLY, sizeof(elem_buf_type) * vector_size, buf_Res);
+	CreateCLBuffer(context, CL_MEM_READ_ONLY, sizeof(INF_BUFFER) * size, buf_m1);
+	CreateCLBuffer(context, CL_MEM_READ_ONLY, sizeof(INF_BUFFER) * size, buf_m2);
+	CreateCLBuffer(context, CL_MEM_READ_ONLY, sizeof(INF_BUFFER) * size, buf_m3);
+	CreateCLBuffer(context, CL_MEM_READ_ONLY, sizeof(INF_BUFFER) * size, buf_m4);
+	CreateCLBuffer(context, CL_MEM_READ_ONLY, sizeof(INF_BUFFER) * size, buf_m5);
+	CreateCLBuffer(context, CL_MEM_WRITE_ONLY, sizeof(INF_BUFFER) * size, buf_Res);
 
-	SetCLKernelArgs(kernel, 0, sizeof(cl_mem), (void*)(&buf_A));
-	SetCLKernelArgs(kernel, 1, sizeof(cl_mem), (void*)(&buf_B));
-	SetCLKernelArgs(kernel, 2, sizeof(cl_mem), (void*)(&buf_Res));
-	SetCLKernelArgs(kernel, 3, sizeof(cl_uint), (void*)(&vector_size));
+	SetCLKernelArgs(kernel, 0, sizeof(cl_mem), (void*)(&buf_m1));
+	SetCLKernelArgs(kernel, 1, sizeof(cl_mem), (void*)(&buf_m2));
+	SetCLKernelArgs(kernel, 2, sizeof(cl_mem), (void*)(&buf_m3));
+	SetCLKernelArgs(kernel, 3, sizeof(cl_mem), (void*)(&buf_m4));
+	SetCLKernelArgs(kernel, 4, sizeof(cl_mem), (void*)(&buf_m5));
+	SetCLKernelArgs(kernel, 5, sizeof(cl_mem), (void*)(&buf_Res));
+	SetCLKernelArgs(kernel, 6, sizeof(cl_uint), (void*)(&size));
 
-	A = (vect_elem_type*)malloc(sizeof(vect_elem_type) * vector_size);
-	B = (vect_elem_type*)malloc(sizeof(vect_elem_type) * vector_size);
-	Res = (vect_elem_type*)malloc(sizeof(vect_elem_type) * vector_size);
+	FillMatrByChoice(GetMatrFillFromUser(), width, height, matr1, matr2, matr3, matr4, matr5);
 
-	_tprintf(__TEXT("Enter value to fill vector elements: "));
-	_tscanf(__TEXT("%f"), &value);
-	for (unsigned i = 0; i < vector_size; A[i] = B[i] = value, i++);
-
-	DWORD time_copy = GetTickCount();
-	CopyCLDataToMemObj(command_queue, buf_A, CL_TRUE, sizeof(elem_buf_type) * vector_size, A);
-	CopyCLDataToMemObj(command_queue, buf_B, CL_TRUE, sizeof(elem_buf_type) * vector_size, B);
+	timeCopy = GetTickCount64();
+	CopyCLDataToMemObj(command_queue, buf_m1, CL_TRUE, sizeof(INF_BUFFER) * size, matr1.GetInternalArray());
+	CopyCLDataToMemObj(command_queue, buf_m2, CL_TRUE, sizeof(INF_BUFFER) * size, matr2.GetInternalArray());
+	CopyCLDataToMemObj(command_queue, buf_m3, CL_TRUE, sizeof(INF_BUFFER) * size, matr3.GetInternalArray());
+	CopyCLDataToMemObj(command_queue, buf_m4, CL_TRUE, sizeof(INF_BUFFER) * size, matr4.GetInternalArray());
+	CopyCLDataToMemObj(command_queue, buf_m5, CL_TRUE, sizeof(INF_BUFFER) * size, matr5.GetInternalArray());
 		
 	_tprintf(__TEXT("Starting calculations...\n"));
-	DWORD timeCalc = GetTickCount();
-	for (calc_iter = 0; calc_iter < N_ITER; calc_iter++)
-		if ((error_code = RunCLKernel(command_queue, kernel, 1, (size_t*)(&vector_size), NULL)) != CL_SUCCESS)
-			break;
-	timeCalc = GetTickCount() - timeCalc;
+	timeCalc = GetTickCount64();
+	RunCLKernel(command_queue, kernel, 1, (size_t*)(&size), NULL);
+	timeCalc = GetTickCount64() - timeCalc;
 	_tprintf(__TEXT("The end of calculations.\n"));
+	ReadCLDataFromMemObj(command_queue, buf_Res, CL_TRUE, sizeof(INF_BUFFER) * size, matrResult.GetInternalArray());
+	timeCopy = GetTickCount64() - timeCopy;
+	std::cout << "Calculation time is " << timeCalc << "ms and full (with copying) time is " << timeCopy << "ms.\n";
+	WriteResultToFileByChoice(matrResult);
 
-	ReadCLDataFromMemObj(command_queue, buf_Res, CL_TRUE, sizeof(elem_buf_type) * vector_size, Res);
 
-	time_copy = GetTickCount() - time_copy;
-	_tprintf(__TEXT("%u interations of calculations have been completed successfully!\n Calculation time is %u ms\n Copying / reading data to / from OpenCL memory objects and calculation time is %u ms\n"), N_ITER, timeCalc, time_copy);
-	
-	choice = GetFileOutputChoice();
-
-	if (choice == 'y' || choice == 'Y')
-	{
-		WriteResultToFile(Res, vector_size);
-	}
-
-	free(A);
-	free(B);
-	free(Res);
-	clReleaseMemObject(buf_A);
-	clReleaseMemObject(buf_B);
+	clReleaseMemObject(buf_m1);
+	clReleaseMemObject(buf_m2);
+	clReleaseMemObject(buf_m3);
+	clReleaseMemObject(buf_m4);
+	clReleaseMemObject(buf_m5);
 	clReleaseMemObject(buf_Res);
 	clReleaseKernel(kernel);
 	clReleaseProgram(program);
@@ -164,224 +240,6 @@ int main()
 	free(devices_id);
 	free(platforms_id);
 	
-	return 0;
-
-// 	Получаем список OpenCL платформ и их кол-во
-	if (GetCLPlatformsList(platforms_id, n_platforms))
-	{
-
-// Выводим на экран список OpenCL платформ
-		OutCLPlatformsInfo(platforms_id, n_platforms);
-		
-// Выбираем конкретную платформу из списка для последующей работы
-		do
-		{
-			_tprintf(__TEXT("Enter the number of platform to work (from 1 to %u): "), n_platforms);
-			choice = _getch();
-			putchar(choice);
-			putchar('\n');
-			choice -= 0x30;
-		} while (choice == 0 || choice > n_platforms);
-
-// Получаем список OpenCL устройств и их кол-во для указазанной платформы
-		if (GetCLDevicesList(device_type, platforms_id[choice - 1], devices_id, n_devices))
-		{
-
-// Выводим на екран список OpenCL устройств для выбранной платформы
-			OutCLDevicesInfo(devices_id, n_devices);
-
-// Создаем OpenCL контекст для устройств указанной платформы, для создания в нем объектов, предназначенных для выполнения вычислений.
-			if ((error_code = CreateCLContext(n_devices, devices_id, context)) == CL_SUCCESS)
-			{
-
-// Если устройств будет более одного, то выбираем номер утсройства для работы
-				if (n_devices > 1)
-				{
-					do
-					{
-						_tprintf(__TEXT("Enter the number of device to work (from 1 to %u): "), n_devices);
-						device_num = _getch();
-						putchar(device_num);
-						putchar('\n');
-						device_num -= 0x30;
-					} while (device_num == 0 || device_num > n_devices);
-				}
-
-// Создаем очередь команд для выбранного устройства в созданном контексте
-				if ((error_code = CreateCLCommandQueue(devices_id[device_num - 1], context, command_queue)) == CL_SUCCESS)
-				{
-
-/* 
-Считываем из текстового файла исходный код функции ядра (функция, выполняющая заданные расчеты на выбранном устройстве,
-описанная с ключевым словом __kernel)
-*/
-
-					if (ReadFileToChar((TCHAR*)KERNEL_FILE_NAME, file_data, file_size))
-					{
-						_tprintf(__TEXT("Kernel text:\n"));
-						printf("%s\n\n", file_data);
-
-// На основе прочитанного кода ядра, представленного в виде в строки, создаем объект "программа"
-						if ((error_code = CreateCLProgram(context, (const char**)(&file_data), program)) == CL_SUCCESS)
-						{
-
-// Создаем исполнимый код ядра (компиляция + линковка)
-							if ((error_code = BuildCLProgram(program)) == CL_SUCCESS)
-							{
-
-// Создаем объект для ядра
-								if ((error_code = CreateCLKernel(program, KERNEL_NAME, kernel)) == CL_SUCCESS)
-								{
-
-									_tprintf(__TEXT("Enter the number of vector elements: "));
-									_tscanf(__TEXT("%u"), &vector_size);
-
-/*
-Создаем 3 объекта для работы с памятью, которые будут использовать для хранения данных 2-ух векторов, а также для хранения результата суммирования.
-При этом указываются соответствующие режимы доступа для созданных объектов
-*/
-									if (((error_code = CreateCLBuffer(context, CL_MEM_READ_ONLY, sizeof(elem_buf_type) * vector_size, buf_A)) == CL_SUCCESS)
-										&& (CreateCLBuffer(context, CL_MEM_READ_ONLY, sizeof(elem_buf_type) * vector_size, buf_B) == CL_SUCCESS)
-										&& (CreateCLBuffer(context, CL_MEM_WRITE_ONLY, sizeof(elem_buf_type) * vector_size, buf_Res) == CL_SUCCESS))
-									{
-
-/*
-Устанавливаем соответствующие значения для аргументов функции ядра. В нашем случае это 2 вектора с исходными данными, вектор результата сложения и кол-во
-элементов в каждом из векторов
-*/
-										if ((error_code = SetCLKernelArgs(kernel, 0, sizeof(cl_mem), (void*)(&buf_A))) == CL_SUCCESS
-											&& SetCLKernelArgs(kernel, 1, sizeof(cl_mem), (void*)(&buf_B)) == CL_SUCCESS
-											&& SetCLKernelArgs(kernel, 2, sizeof(cl_mem), (void*)(&buf_Res)) == CL_SUCCESS
-											&& SetCLKernelArgs(kernel, 3, sizeof(cl_uint), (void*)(&vector_size)) == CL_SUCCESS
-											)
-										{
-
-/*
-Выделяем память в приложении под векторы входных данных и вектор результата
-*/
-											A = (vect_elem_type*)malloc(sizeof(vect_elem_type) * vector_size);
-											B = (vect_elem_type*)malloc(sizeof(vect_elem_type) * vector_size);
-											Res = (vect_elem_type*)malloc(sizeof(vect_elem_type) * vector_size);
-
-											if (A != NULL && B != NULL && Res != NULL)
-											{
-
-// Заполняем векторы входных данных введенным пользователем значением
-
-												_tprintf(__TEXT("Enter value to fill vector elements: "));
-												_tscanf(__TEXT("%f"), &value);
-												for (unsigned i = 0; i < vector_size; A[i] = B[i] = value, i++);
-
-/*
-Копируем данные из исходных векторов A и B в соответствующие объекты памяти, созданные выше, в синхронном режиме
-*/
-												DWORD time_copy = GetTickCount();
-												if ((error_code = CopyCLDataToMemObj(command_queue, buf_A, CL_TRUE, sizeof(elem_buf_type) * vector_size, A)) == CL_SUCCESS
-													&& CopyCLDataToMemObj(command_queue, buf_B, CL_TRUE, sizeof(elem_buf_type) * vector_size, B) == CL_SUCCESS
-													)
-												{
-
-/*
-В цикле из указанного цисла итераций (нужно, чтобы получить ненулевое время выполнения) запускаем на выполнение функцию ядра на выбранном OpenCL устройстве
-*/
-													_tprintf(__TEXT("Starting calculations...\n"));
-													DWORD time = GetTickCount();
-													for (calc_iter = 0; calc_iter < N_ITER; calc_iter++)
-														if ((error_code = RunCLKernel(command_queue, kernel, 1, (size_t*)(&vector_size), NULL)) != CL_SUCCESS)
-															break;
-													time = GetTickCount() - time;
-													_tprintf(__TEXT("The end of calculations.\n"));
-													if (calc_iter == N_ITER)
-													{												
-/*
-Считываем данные из обхекта памяти, созданного под помещение в него результата сложения, в выделенный в программе буфер для хранения вектора результатов
-*/
-														if ((error_code = ReadCLDataFromMemObj(command_queue, buf_Res, CL_TRUE, sizeof(elem_buf_type) * vector_size, Res)) == CL_SUCCESS)
-														{
-															time_copy = GetTickCount() - time_copy;
-/*
-Задаем вопрос о необходимости записи полученного результата в файл
-*/
-															_tprintf(__TEXT("%u interations of calculations have been completed successfully!\n Calculation time is %u ms\n Copying / reading data to / from OpenCL memory objects and calculation time is %u ms\n"), N_ITER, time, time_copy);
-															do
-															{
-																_tprintf(__TEXT("\nDo you want to out resulting data to file (y/n)?"));
-																choice = _getch();
-																putchar(choice);
-															} while (choice != 'y' && choice != 'Y' && choice != 'n' && choice != 'N');
-
-// При соответствующем выборе пользователя записываем элементы результирующего вектора в файл
-															if (choice == 'y' || choice == 'Y')
-															{
-																WriteResultToFile(Res, vector_size);
-															}
-														}
-														else
-															_tprintf(__TEXT("Error of data from memory objects reading (error_code = %i)!\n"), error_code);
-													}
-													else
-														_tprintf(__TEXT("Error of kernel running (error_code = %i)!\n"), error_code);
-												}
-												else
-													_tprintf(__TEXT("Error of data to memory objects copying (error_code = %i)!\n"), error_code);
-											}
-
-// Освобождение памяти, выделенной под ресурсы
-											free(A);
-											free(B);
-											free(Res);
-										}
-										else
-											_tprintf(__TEXT("Error of kernel arguments setting (error_code = %i)!\n"), error_code);
-
-// Освобождение памяти, выделенной под ресурсы
-										clReleaseMemObject(buf_A);
-										clReleaseMemObject(buf_B);
-										clReleaseMemObject(buf_Res);
-									}
-									else
-										_tprintf(__TEXT("Error of memory objects creating (error_code = %i)!\n"), error_code);
-
-// Освобождение памяти, выделенной под ресурсы
-									clReleaseKernel(kernel);
-								}
-								else
-									_tprintf(__TEXT("Error of kernel creating (error_code = %i)!\n"), error_code);
-							}
-							else
-								_tprintf(__TEXT("Error of program building (error_code = %i)!\n"), error_code);
-
-// Освобождение памяти, выделенной под ресурсы
-							clReleaseProgram(program);
-						}
-						else
-							_tprintf(__TEXT("Error of program creating (error_code = %i)!\n"), error_code);
-
-// Освобождение памяти, выделенной под ресурсы
-						free(file_data);
-					}
-					else
-						_tprintf(__TEXT("Error of file reading %s with kernel source\n"), KERNEL_FILE_NAME);
-
-// Освобождение памяти, выделенной под ресурсы
-					clReleaseCommandQueue(command_queue);
-				}
-				else
-					_tprintf(__TEXT("Error of command queue creating (error_code = %i)!\n"), error_code);
-
-// Освобождение памяти, выделенной под ресурсы				
-				clReleaseContext(context);
-			}
-			else
-				_tprintf(__TEXT("Error of device context creatring (error_code = %i)!\n"), error_code);
-
-// Освобождение памяти, выделенной под ресурсы
-			free(devices_id);
-		}
-
-// Освобождение памяти, выделенной под ресурсы
-		free(platforms_id);
-	}
 	return 0;
 }
 
