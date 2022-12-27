@@ -3,6 +3,7 @@
 #define _CRT_SECURE_NO_WARNINGS
 
 #include <conio.h>
+#include "PlatformInfo.h"
 #include "DeviceInfo.h"
 #include "FileWork.h"
 #include "OpenCLwork.h"
@@ -12,9 +13,52 @@ typedef cl_float elem_buf_type;
 
 #define	KERNEL_FILE_NAME	__TEXT("VectorAdd.cl")
 #define	KERNEL_NAME			"VectorsAdd"
-#define OUT_FILE_NAME		__TEXT("Res.txt")
+
 
 #define N_ITER				100000
+
+unsigned char GetPlatformChoice(cl_uint n_platforms)
+{
+	unsigned char choice = 1;
+	do
+	{
+		_tprintf(__TEXT("Enter the number of platform to work (from 1 to %u): "), n_platforms);
+		choice = _getch();
+		putchar(choice);
+		putchar('\n');
+		choice -= 0x30;
+	} while (choice == 0 || choice > n_platforms);
+	return choice;
+}
+
+unsigned char GetDeviceNumChoice(cl_uint n_devices)
+{
+	unsigned char device_num = 1;
+	if (n_devices > 1)
+	{
+		do
+		{
+			_tprintf(__TEXT("Enter the number of device to work (from 1 to %u): "), n_devices);
+			device_num = _getch();
+			putchar(device_num);
+			putchar('\n');
+			device_num -= 0x30;
+		} while (device_num == 0 || device_num > n_devices);
+	}
+	return device_num;
+}
+
+unsigned char GetFileOutputChoice()
+{
+	unsigned char choice = 1;
+	do
+	{
+		_tprintf(__TEXT("\nDo you want to out resulting data to file (y/n)?"));
+		choice = _getch();
+		putchar(choice);
+	} while (choice != 'y' && choice != 'Y' && choice != 'n' && choice != 'N');
+	return choice;
+}
 
 int main()
 {
@@ -38,6 +82,89 @@ int main()
 	unsigned vector_size, calc_iter;
 
 	vect_elem_type *A = NULL, *B = NULL, *Res = NULL, value;
+
+	GetCLPlatformsList(platforms_id, n_platforms);
+	OutCLPlatformsInfo(platforms_id, n_platforms);
+
+	choice = GetPlatformChoice(n_platforms);
+
+	GetCLDevicesList(device_type, platforms_id[choice - 1], devices_id, n_devices);
+	OutCLDevicesInfo(devices_id, n_devices);
+
+	CreateCLContext(n_devices, devices_id, context);
+	
+	device_num = GetDeviceNumChoice(n_devices);
+
+	CreateCLCommandQueue(devices_id[device_num - 1], context, command_queue);
+
+	ReadFileToChar((TCHAR*)KERNEL_FILE_NAME, file_data, file_size);
+	_tprintf(__TEXT("Kernel text:\n"));
+	printf("%s\n\n", file_data);
+
+	CreateCLProgram(context, (const char**)(&file_data), program);
+	BuildCLProgram(program);
+
+	CreateCLKernel(program, KERNEL_NAME, kernel);
+
+	_tprintf(__TEXT("Enter the number of vector elements: "));
+	_tscanf(__TEXT("%u"), &vector_size);
+
+	CreateCLBuffer(context, CL_MEM_READ_ONLY, sizeof(elem_buf_type) * vector_size, buf_A);
+	CreateCLBuffer(context, CL_MEM_READ_ONLY, sizeof(elem_buf_type) * vector_size, buf_B);
+	CreateCLBuffer(context, CL_MEM_WRITE_ONLY, sizeof(elem_buf_type) * vector_size, buf_Res);
+
+	SetCLKernelArgs(kernel, 0, sizeof(cl_mem), (void*)(&buf_A));
+	SetCLKernelArgs(kernel, 1, sizeof(cl_mem), (void*)(&buf_B));
+	SetCLKernelArgs(kernel, 2, sizeof(cl_mem), (void*)(&buf_Res));
+	SetCLKernelArgs(kernel, 3, sizeof(cl_uint), (void*)(&vector_size));
+
+	A = (vect_elem_type*)malloc(sizeof(vect_elem_type) * vector_size);
+	B = (vect_elem_type*)malloc(sizeof(vect_elem_type) * vector_size);
+	Res = (vect_elem_type*)malloc(sizeof(vect_elem_type) * vector_size);
+
+	_tprintf(__TEXT("Enter value to fill vector elements: "));
+	_tscanf(__TEXT("%f"), &value);
+	for (unsigned i = 0; i < vector_size; A[i] = B[i] = value, i++);
+
+	DWORD time_copy = GetTickCount();
+	CopyCLDataToMemObj(command_queue, buf_A, CL_TRUE, sizeof(elem_buf_type) * vector_size, A);
+	CopyCLDataToMemObj(command_queue, buf_B, CL_TRUE, sizeof(elem_buf_type) * vector_size, B);
+		
+	_tprintf(__TEXT("Starting calculations...\n"));
+	DWORD timeCalc = GetTickCount();
+	for (calc_iter = 0; calc_iter < N_ITER; calc_iter++)
+		if ((error_code = RunCLKernel(command_queue, kernel, 1, (size_t*)(&vector_size), NULL)) != CL_SUCCESS)
+			break;
+	timeCalc = GetTickCount() - timeCalc;
+	_tprintf(__TEXT("The end of calculations.\n"));
+
+	ReadCLDataFromMemObj(command_queue, buf_Res, CL_TRUE, sizeof(elem_buf_type) * vector_size, Res);
+
+	time_copy = GetTickCount() - time_copy;
+	_tprintf(__TEXT("%u interations of calculations have been completed successfully!\n Calculation time is %u ms\n Copying / reading data to / from OpenCL memory objects and calculation time is %u ms\n"), N_ITER, timeCalc, time_copy);
+	
+	choice = GetFileOutputChoice();
+
+	if (choice == 'y' || choice == 'Y')
+	{
+		WriteResultToFile(Res, vector_size);
+	}
+
+	free(A);
+	free(B);
+	free(Res);
+	clReleaseMemObject(buf_A);
+	clReleaseMemObject(buf_B);
+	clReleaseMemObject(buf_Res);
+	clReleaseKernel(kernel);
+	clReleaseProgram(program);
+	free(file_data);
+	clReleaseCommandQueue(command_queue);			
+	clReleaseContext(context);
+	free(devices_id);
+	free(platforms_id);
+	
+	return 0;
 
 // 	Получаем список OpenCL платформ и их кол-во
 	if (GetCLPlatformsList(platforms_id, n_platforms))
@@ -186,13 +313,7 @@ int main()
 // При соответствующем выборе пользователя записываем элементы результирующего вектора в файл
 															if (choice == 'y' || choice == 'Y')
 															{
-																FILE* F = _tfopen(OUT_FILE_NAME, __TEXT("w+"));
-																if (F)
-																{
-																	fprintf(F, "The list of pairs: vector index - result value:\n");
-																	for (unsigned i = 0; i < vector_size; i++)
-																		fprintf(F, "%u - %f\n", i, Res[i]);
-																}
+																WriteResultToFile(Res, vector_size);
 															}
 														}
 														else

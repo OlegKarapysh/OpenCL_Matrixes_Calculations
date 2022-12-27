@@ -152,10 +152,12 @@
     <ClCompile Include="FileWork.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="OpenCLwork.cpp" />
+    <ClCompile Include="PlatformInfo.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DeviceInfo.h" />
     <ClInclude Include="FileWork.h" />
+    <ClInclude Include="PlatformInfo.h" />
     <ClInclude Include="OpenCLwork.h" />
   </ItemGroup>
   <ItemGroup>

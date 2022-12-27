@@ -1,3 +1,0 @@
-The list of pairs: vector index - result value:
-0 - 6.000000
-1 - 6.000000
