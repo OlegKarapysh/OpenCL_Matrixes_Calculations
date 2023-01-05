@@ -4,34 +4,48 @@
 
 #define OUT_FILE_NAME		__TEXT("Res.txt")
 
-bool ReadFileToChar(TCHAR* file_name, char*& file_data, DWORD& file_size)
+FileWork::FileWork(const ErrorLogger& logger)
+{
+	Logger = logger;
+}
+
+bool FileWork::ReadFileToChar(TCHAR* file_name, char*& file_data, DWORD& file_size)
 {
 	HANDLE hFile = CreateFile(file_name, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, NULL);
 
-	if (hFile != INVALID_HANDLE_VALUE)
+	if (hFile == INVALID_HANDLE_VALUE)
 	{
-		DWORD file_size = GetFileSize(hFile, NULL), read_size;
-		file_data = (char*)malloc(file_size + 1);
-		ReadFile(hFile, file_data, file_size, &read_size, NULL);
-		file_data[file_size] = 0;
-		CloseHandle(hFile);
-		return file_size == read_size;
+		Logger.LogCantCreateFile();
+		return false;
 	}
-	return false;
+	
+	DWORD read_size;
+	file_size = GetFileSize(hFile, NULL);
+	file_data = (char*)malloc(file_size + 1);
+	ReadFile(hFile, file_data, file_size, &read_size, NULL);
+	file_data[file_size] = 0;
+	CloseHandle(hFile);
+	return file_size == read_size;
 }
 
-void WriteResultToFile(Matrix<INF>& result)
+bool FileWork::WriteResultToFile(Matrix<INF>& result)
 {
 	FILE* resFile = _tfopen(OUT_FILE_NAME, __TEXT("w+"));
-	if (resFile)
+	if (resFile == NULL)
 	{
-		fprintf(resFile, "The list of pairs: matrix element index - result value:\n");
-		for (unsigned i = 0; i < result.GetHeight(); i++)
+		Logger.LogCantOpenFile();
+		return false;
+	}
+
+	fprintf(resFile, "The list of pairs: matrix element index - result value:\n");
+	for (unsigned i = 0; i < result.GetHeight(); i++)
+	{
+		for (unsigned j = 0; j < result.GetWidth(); j++)
 		{
-			for (unsigned j = 0; j < result.GetWidth(); j++)
-			{
-				fprintf(resFile, "(%u, %u) - %f\n", i, j, result[i]);
-			}
+			fprintf(resFile, "(%u, %u) - %f\n", i, j, result[i]);
 		}
 	}
+	return true;
 }
+
+

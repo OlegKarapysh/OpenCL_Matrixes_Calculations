@@ -153,10 +153,12 @@
     <ClCompile Include="main.cpp" />
     <ClCompile Include="OpenCLwork.cpp" />
     <ClCompile Include="PlatformInfo.cpp" />
+    <ClCompile Include="ErrorLogger.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="DeviceInfo.h" />
     <ClInclude Include="DynamicArray.h" />
+    <ClInclude Include="ErrorLogger.h" />
     <ClInclude Include="FileWork.h" />
     <ClInclude Include="DEFINES.h" />
     <ClInclude Include="Matrix.h" />
@@ -164,6 +166,7 @@
     <ClInclude Include="OpenCLwork.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="VectorAdd_double.cl" />
     <None Include="VectorAdd_float.cl" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

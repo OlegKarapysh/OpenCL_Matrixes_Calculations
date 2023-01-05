@@ -5,6 +5,13 @@
 
 #include "Matrix.h"
 #include "DEFINES.h"
+#include "ErrorLogger.h"
 
-bool ReadFileToChar(TCHAR* file_name, char*& file_data, DWORD& file_size);
-void WriteResultToFile(Matrix<INF>& result);
+struct FileWork
+{
+	ErrorLogger Logger;
+
+	FileWork(const ErrorLogger& logger);
+	bool ReadFileToChar(TCHAR* file_name, char*& file_data, DWORD& file_size);
+	bool WriteResultToFile(Matrix<INF>& result);
+};

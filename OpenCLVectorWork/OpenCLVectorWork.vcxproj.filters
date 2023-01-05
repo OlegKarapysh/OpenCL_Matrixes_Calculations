@@ -30,6 +30,9 @@
     <ClCompile Include="PlatformInfo.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="ErrorLogger.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="OpenCLwork.h">
@@ -53,8 +56,12 @@
     <ClInclude Include="DEFINES.h">
       <Filter>Файлы заголовков</Filter>
     </ClInclude>
+    <ClInclude Include="ErrorLogger.h">
+      <Filter>Файлы заголовков</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="VectorAdd_float.cl" />
+    <None Include="VectorAdd_double.cl" />
   </ItemGroup>
 </Project>

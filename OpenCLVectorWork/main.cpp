@@ -11,6 +11,8 @@
 #include "OpenCLwork.h"
 #include "DEFINES.h"
 
+ErrorLogger errLogger;
+FileWork fileWork(errLogger);
 
 unsigned char GetPlatformChoice(cl_uint n_platforms)
 {
@@ -138,7 +140,7 @@ void WriteResultToFileByChoice(Matrix<INF>& result)
 
 	if (writeToFileChoice == 'y' || writeToFileChoice == 'Y')
 	{
-		WriteResultToFile(result);
+		fileWork.WriteResultToFile(result);
 		cout << "The result has been written to file.";
 		return;
 	}
@@ -179,7 +181,7 @@ int main()
 
 	CreateCLCommandQueue(devices_id[device_num - 1], context, command_queue);
 
-	ReadFileToChar((TCHAR*)KERNEL_FILE_NAME, file_data, file_size);
+	fileWork.ReadFileToChar((TCHAR*)KERNEL_FILE_NAME, file_data, file_size);
 	_tprintf(__TEXT("Kernel text:\n"));
 	printf("%s\n\n", file_data);
 
