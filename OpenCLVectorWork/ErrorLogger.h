@@ -4,13 +4,13 @@ struct ErrorLogger
 {
     void LogCantCreateFile();
     void LogCantOpenFile();
-    void LogCantCreateContext();
-    void LogCantCreateCommandQueue();
-    void LogCantCreateCLProgram();
-    void LogCantBuildCLProgram();
-    void LogCantCreateKernel();
+    void LogCantCreateContext(int error);
+    void LogCantCreateCommandQueue(int error);
+    void LogCantCreateCLProgram(int error);
+    void LogCantBuildCLProgram(int error);
+    void LogCantCreateKernel(int error);
     void LogInvalidBufferNumber();
-    void LogCantCreateMemObj();
+    void LogCantCreateMemObj(int error);
     void LogCantSetKernelArgs(int error);
     void LogCantCopyDataToMemObj(int error);
     void LogCantReadDataFromMemObj(int error);

@@ -7,6 +7,7 @@
 #define	KERNEL_NAME			"VectorsAdd"
 #define FILL_FIXED          2
 #define FIXED_NUM           5.5f
+#define MATRIXES_COUNT      6
 
 #ifdef FLOAT
 typedef float INF;

@@ -89,6 +89,23 @@ unsigned GetMatrFillFromUser()
 	return choice;
 }
 
+void CreateBuffersForMatrixes(OpenCLwork& openCLwork, unsigned size)
+{
+	for (unsigned char i = 0; i < MATRIXES_COUNT - 1; ++i)
+	{
+		openCLwork.CreateCLBuffer(i, CL_MEM_READ_ONLY, sizeof(INF_BUFFER) * size);
+	}
+	openCLwork.CreateCLBuffer(MATRIXES_COUNT - 1, CL_MEM_WRITE_ONLY, sizeof(INF_BUFFER) * size);
+}
+
+void SetKernelArgsForMatrixes(OpenCLwork& openCLwork)
+{
+	for (unsigned char i = 0; i < MATRIXES_COUNT; ++i)
+	{
+		openCLwork.SetCLKernelArgsForBuffer(i, sizeof(cl_mem));
+	}
+}
+
 void FillMatrByChoice(
 	unsigned choice
 	, unsigned width
@@ -157,15 +174,10 @@ int main()
 	cl_int error_code = 0;
 	unsigned char choice = 1;
 	unsigned char device_num = 1;
-	cl_context context;
-	cl_command_queue command_queue;
 	char* file_data = NULL;
 	DWORD file_size;
-	cl_program program;
-	cl_kernel kernel;
 	Matrix<INF> matr1, matr2, matr3, matr4, matr5, matrResult;
 	unsigned width, height, size;
-	cl_mem buf_m1, buf_m2, buf_m3, buf_m4, buf_m5, buf_Res;
 	ULONGLONG  timeCopy, timeCalc;
 
 	GetCLPlatformsList(platforms_id, n_platforms);
@@ -176,72 +188,62 @@ int main()
 	GetCLDevicesList(device_type, platforms_id[choice - 1], devices_id, n_devices);
 	OutCLDevicesInfo(devices_id, n_devices);
 
-	OpenCLwork openCLwork(errLogger);
-	openCLwork.CreateCLContext(n_devices, devices_id, context);
+	OpenCLwork openCLwork(errLogger, MATRIXES_COUNT);
+	openCLwork.CreateCLContext(n_devices, devices_id);
 
 	device_num = GetDeviceNumChoice(n_devices);
 
-	openCLwork.CreateCLCommandQueue(devices_id[device_num - 1], context, command_queue);
+	openCLwork.CreateCLCommandQueue(device_num);
 
 	fileWork.ReadFileToChar((TCHAR*)KERNEL_FILE_NAME, file_data, file_size);
 	_tprintf(__TEXT("Kernel text:\n"));
 	printf("%s\n\n", file_data);
 
-	openCLwork.CreateCLProgram(context, (const char**)(&file_data), program);
-	openCLwork.BuildCLProgram(program);
+	openCLwork.CreateCLProgram((const char**)(&file_data));
+	openCLwork.BuildCLProgram();
 
-	openCLwork.CreateCLKernel(program, KERNEL_NAME, kernel);
+	openCLwork.CreateCLKernel(KERNEL_NAME);
 
 	GetMatrixDimensionsFromUser(width, height, size);
 	InitMatrixes(width, height, matr1, matr2, matr3, matr4, matr5, matrResult);
 
-	openCLwork.CreateCLBuffer(context, CL_MEM_READ_ONLY, sizeof(INF_BUFFER) * size, buf_m1);
-	openCLwork.CreateCLBuffer(context, CL_MEM_READ_ONLY, sizeof(INF_BUFFER) * size, buf_m2);
-	openCLwork.CreateCLBuffer(context, CL_MEM_READ_ONLY, sizeof(INF_BUFFER) * size, buf_m3);
-	openCLwork.CreateCLBuffer(context, CL_MEM_READ_ONLY, sizeof(INF_BUFFER) * size, buf_m4);
-	openCLwork.CreateCLBuffer(context, CL_MEM_READ_ONLY, sizeof(INF_BUFFER) * size, buf_m5);
-	openCLwork.CreateCLBuffer(context, CL_MEM_WRITE_ONLY, sizeof(INF_BUFFER) * size, buf_Res);
+	CreateBuffersForMatrixes(openCLwork, size);
+	//openCLwork.CreateCLBuffer(0, CL_MEM_READ_ONLY, sizeof(INF_BUFFER) * size);
+	//openCLwork.CreateCLBuffer(1, CL_MEM_READ_ONLY, sizeof(INF_BUFFER) * size);
+	//openCLwork.CreateCLBuffer(2, CL_MEM_READ_ONLY, sizeof(INF_BUFFER) * size);
+	//openCLwork.CreateCLBuffer(3, CL_MEM_READ_ONLY, sizeof(INF_BUFFER) * size);
+	//openCLwork.CreateCLBuffer(4, CL_MEM_READ_ONLY, sizeof(INF_BUFFER) * size);
+	//openCLwork.CreateCLBuffer(5, CL_MEM_WRITE_ONLY, sizeof(INF_BUFFER) * size);
 
-	openCLwork.SetCLKernelArgs(kernel, 0, sizeof(cl_mem), (void*)(&buf_m1));
-	openCLwork.SetCLKernelArgs(kernel, 1, sizeof(cl_mem), (void*)(&buf_m2));
-	openCLwork.SetCLKernelArgs(kernel, 2, sizeof(cl_mem), (void*)(&buf_m3));
-	openCLwork.SetCLKernelArgs(kernel, 3, sizeof(cl_mem), (void*)(&buf_m4));
-	openCLwork.SetCLKernelArgs(kernel, 4, sizeof(cl_mem), (void*)(&buf_m5));
-	openCLwork.SetCLKernelArgs(kernel, 5, sizeof(cl_mem), (void*)(&buf_Res));
-	openCLwork.SetCLKernelArgs(kernel, 6, sizeof(cl_uint), (void*)(&size));
+	SetKernelArgsForMatrixes(openCLwork);
+	//openCLwork.SetCLKernelArgsForBuffer(0, sizeof(cl_mem));
+	//openCLwork.SetCLKernelArgsForBuffer(1, sizeof(cl_mem));
+	//openCLwork.SetCLKernelArgsForBuffer(2, sizeof(cl_mem));
+	//openCLwork.SetCLKernelArgsForBuffer(3, sizeof(cl_mem));
+	//openCLwork.SetCLKernelArgsForBuffer(4, sizeof(cl_mem));
+	//openCLwork.SetCLKernelArgsForBuffer(5, sizeof(cl_mem));
+	openCLwork.SetCLKernelArgs(6, sizeof(cl_uint), (void*)(&size));
 
 	FillMatrByChoice(GetMatrFillFromUser(), width, height, matr1, matr2, matr3, matr4, matr5);
 
 	timeCopy = GetTickCount64();
-	openCLwork.CopyCLDataToMemObj(command_queue, buf_m1, CL_TRUE, sizeof(INF_BUFFER) * size, matr1.GetInternalArray());
-	openCLwork.CopyCLDataToMemObj(command_queue, buf_m2, CL_TRUE, sizeof(INF_BUFFER) * size, matr2.GetInternalArray());
-	openCLwork.CopyCLDataToMemObj(command_queue, buf_m3, CL_TRUE, sizeof(INF_BUFFER) * size, matr3.GetInternalArray());
-	openCLwork.CopyCLDataToMemObj(command_queue, buf_m4, CL_TRUE, sizeof(INF_BUFFER) * size, matr4.GetInternalArray());
-	openCLwork.CopyCLDataToMemObj(command_queue, buf_m5, CL_TRUE, sizeof(INF_BUFFER) * size, matr5.GetInternalArray());
+	openCLwork.CopyCLDataToMemObj(0, CL_TRUE, sizeof(INF_BUFFER) * size, matr1.GetInternalArray());
+	openCLwork.CopyCLDataToMemObj(1, CL_TRUE, sizeof(INF_BUFFER) * size, matr2.GetInternalArray());
+	openCLwork.CopyCLDataToMemObj(2, CL_TRUE, sizeof(INF_BUFFER) * size, matr3.GetInternalArray());
+	openCLwork.CopyCLDataToMemObj(3, CL_TRUE, sizeof(INF_BUFFER) * size, matr4.GetInternalArray());
+	openCLwork.CopyCLDataToMemObj(4, CL_TRUE, sizeof(INF_BUFFER) * size, matr5.GetInternalArray());
 		
 	_tprintf(__TEXT("Starting calculations...\n"));
 	timeCalc = GetTickCount64();
-	openCLwork.RunCLKernel(command_queue, kernel, 1, (size_t*)(&size), NULL);
+	openCLwork.RunCLKernel(1, (size_t*)(&size), NULL);
 	timeCalc = GetTickCount64() - timeCalc;
 	_tprintf(__TEXT("The end of calculations.\n"));
-	openCLwork.ReadCLDataFromMemObj(command_queue, buf_Res, CL_TRUE, sizeof(INF_BUFFER) * size, matrResult.GetInternalArray());
+	openCLwork.ReadCLDataFromMemObj(5, CL_TRUE, sizeof(INF_BUFFER) * size, matrResult.GetInternalArray());
 	timeCopy = GetTickCount64() - timeCopy;
 	std::cout << "Calculation time is " << timeCalc << "ms and full (with copying) time is " << timeCopy << "ms.\n";
 	WriteResultToFileByChoice(matrResult);
 
-
-	clReleaseMemObject(buf_m1);
-	clReleaseMemObject(buf_m2);
-	clReleaseMemObject(buf_m3);
-	clReleaseMemObject(buf_m4);
-	clReleaseMemObject(buf_m5);
-	clReleaseMemObject(buf_Res);
-	clReleaseKernel(kernel);
-	clReleaseProgram(program);
-	clReleaseCommandQueue(command_queue);			
-	clReleaseContext(context);
 	free(file_data);
-	free(devices_id);
 	free(platforms_id);
 	
 	return 0;

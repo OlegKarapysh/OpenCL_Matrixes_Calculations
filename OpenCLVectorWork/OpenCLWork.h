@@ -21,7 +21,7 @@ private:
 	cl_command_queue _command_queue = NULL;
 	cl_program _program = NULL;
 	cl_kernel _kernel = NULL;
-    cl_mem* _buffers;
+    cl_mem* _buffers = NULL;
 	ULONGLONG  _timeCopy = 0, _timeCalc = 0;
 
 public:
@@ -44,6 +44,8 @@ public:
     cl_int CreateCLBuffer(unsigned char nBuffer, cl_mem_flags flags, size_t size);
 
     cl_int SetCLKernelArgs(cl_uint index, size_t size, const void* value);
+
+    cl_int SetCLKernelArgsForBuffer(cl_uint index, size_t size);
 
     cl_int CopyCLDataToMemObj(unsigned char nBuffer, cl_bool blocking, size_t size, const void* value);
 

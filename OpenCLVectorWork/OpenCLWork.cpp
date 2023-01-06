@@ -35,9 +35,11 @@ cl_int OpenCLwork::CreateCLContext(const cl_uint& n_devices, cl_device_id* devic
 {
 	cl_int error;
 	_context = clCreateContext(NULL, n_devices, devices_id, NULL, NULL, &error);
+	_devicesId = devices_id;
+	_nDevices = n_devices;
 	if (error != CL_SUCCESS)
 	{
-		_errLogger.LogCantCreateContext();
+		_errLogger.LogCantCreateContext((int)error);
 	}
 	return error;
 }
@@ -48,7 +50,7 @@ cl_int OpenCLwork::CreateCLCommandQueue(unsigned char deviceNum)
 	_command_queue = clCreateCommandQueue(_context, _devicesId[deviceNum - 1], 0, &error);
 	if (error != CL_SUCCESS)
 	{
-		_errLogger.LogCantCreateCommandQueue();
+		_errLogger.LogCantCreateCommandQueue((int)error);
 	}
 	return error;
 }
@@ -59,7 +61,7 @@ cl_int OpenCLwork::CreateCLProgram(const char** prog_string)
 	_program = clCreateProgramWithSource(_context, 1, prog_string, NULL, &error);
 	if (error != CL_SUCCESS)
 	{
-		_errLogger.LogCantCreateCLProgram();
+		_errLogger.LogCantCreateCLProgram((int)error);
 	}
 	return error;
 }
@@ -69,7 +71,7 @@ cl_int OpenCLwork::BuildCLProgram()
 	cl_int error = clBuildProgram(_program, 0, NULL, NULL, NULL, NULL);
 	if (error != CL_SUCCESS)
 	{
-		_errLogger.LogCantBuildCLProgram();
+		_errLogger.LogCantBuildCLProgram((int)error);
 	}
 	return error;
 }
@@ -80,7 +82,7 @@ cl_int OpenCLwork::CreateCLKernel(const char* kernel_name)
 	_kernel = clCreateKernel(_program, kernel_name, &error);
 	if (error != CL_SUCCESS)
 	{
-		_errLogger.LogCantCreateKernel();
+		_errLogger.LogCantCreateKernel((int)error);
 	}
 	return error;
 }
@@ -97,7 +99,7 @@ cl_int OpenCLwork::CreateCLBuffer(unsigned char nBuffer, cl_mem_flags flags, siz
 	_buffers[nBuffer] = clCreateBuffer(_context, flags, size, NULL, &error);
 	if (error != CL_SUCCESS)
 	{
-		_errLogger.LogCantCreateMemObj();
+		_errLogger.LogCantCreateMemObj((int)error);
 	}
 	return error;
 }
@@ -105,6 +107,16 @@ cl_int OpenCLwork::CreateCLBuffer(unsigned char nBuffer, cl_mem_flags flags, siz
 cl_int OpenCLwork::SetCLKernelArgs(cl_uint index, size_t size, const void* value)
 {
 	cl_int error = clSetKernelArg(_kernel, index, size, value);
+	if (error != CL_SUCCESS)
+	{
+		_errLogger.LogCantSetKernelArgs((int)error);
+	}
+	return error;
+}
+
+cl_int OpenCLwork::SetCLKernelArgsForBuffer(cl_uint index, size_t size)
+{
+	cl_int error = clSetKernelArg(_kernel, index, size, (void*)&_buffers[index]);
 	if (error != CL_SUCCESS)
 	{
 		_errLogger.LogCantSetKernelArgs((int)error);

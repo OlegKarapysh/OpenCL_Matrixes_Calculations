@@ -11,29 +11,29 @@ void ErrorLogger::LogCantOpenFile()
     std::cout << "Error while opening file!" << std::endl;
 }
 
-void ErrorLogger::LogCantCreateContext()
+void ErrorLogger::LogCantCreateContext(int error)
 {
-    std::cout << "Error while creating context!" << std::endl;
+    std::cout << "Error " << error << " while creating context!" << std::endl;
 }
 
-void ErrorLogger::LogCantCreateCommandQueue()
+void ErrorLogger::LogCantCreateCommandQueue(int error)
 {
-    std::cout << "Error while creating command queue!" << std::endl;
+    std::cout << "Error " << error << " while creating command queue!" << std::endl;
 }
 
-void ErrorLogger::LogCantCreateCLProgram()
+void ErrorLogger::LogCantCreateCLProgram(int error)
 {
-    std::cout << "Error while creating OpenCL program!" << std::endl;
+    std::cout << "Error " << error << " while creating OpenCL program!" << std::endl;
 }
 
-void ErrorLogger::LogCantBuildCLProgram()
+void ErrorLogger::LogCantBuildCLProgram(int error)
 {
-    std::cout << "Error while building OpenCL program!" << std::endl;
+    std::cout << "Error " << error << " while building OpenCL program!" << std::endl;
 }
 
-void ErrorLogger::LogCantCreateKernel()
+void ErrorLogger::LogCantCreateKernel(int error)
 {
-    std::cout << "Error while creating kernel!" << std::endl;
+    std::cout << "Error " << error << " while creating kernel!" << std::endl;
 }
 
 void ErrorLogger::LogInvalidBufferNumber()
@@ -41,9 +41,9 @@ void ErrorLogger::LogInvalidBufferNumber()
     std::cout << "Invalid buffer number, buffer was not created!" << std::endl;
 }
 
-void ErrorLogger::LogCantCreateMemObj()
+void ErrorLogger::LogCantCreateMemObj(int error)
 {
-    std::cout << "Error while creating memory object!" << std::endl;
+    std::cout << "Error " << error << " while creating memory object!" << std::endl;
 }
 
 void ErrorLogger::LogCantSetKernelArgs(int error)
