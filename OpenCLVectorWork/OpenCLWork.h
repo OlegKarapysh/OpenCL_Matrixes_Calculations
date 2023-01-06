@@ -8,27 +8,46 @@
 #include <tchar.h>
 #include <stdio.h>
 
+#include "ErrorLogger.h"
 
-cl_int CreateCLContext(const cl_uint& n_devices, cl_device_id *devices_id, cl_context& context);
+class OpenCLwork
+{
+private:
+    ErrorLogger _errLogger;
+    unsigned char _nBuffers;
+	cl_uint _nDevices = NULL;
+	cl_device_id* _devicesId = NULL;
+	cl_context _context = NULL;
+	cl_command_queue _command_queue = NULL;
+	cl_program _program = NULL;
+	cl_kernel _kernel = NULL;
+    cl_mem* _buffers;
+	ULONGLONG  _timeCopy = 0, _timeCalc = 0;
 
-cl_int CreateCLCommandQueue(const cl_device_id& device_id, const cl_context& context, 
-    cl_command_queue& command_queue);
+public:
+    OpenCLwork(const ErrorLogger& logger, unsigned char buffersCount);
 
-cl_int CreateCLProgram(const cl_context& context, const char** prog_string, cl_program& program);
+    ~OpenCLwork();
+    
+    void ReleaseBuffers();
 
-cl_int BuildCLProgram(cl_program& program);
+    cl_int CreateCLContext(const cl_uint& n_devices, cl_device_id* devices_id);
 
-cl_int CreateCLKernel(const cl_program& program, const char* kernel_name, cl_kernel& kernel);
+    cl_int CreateCLCommandQueue(unsigned char deviceNum);
 
-cl_int CreateCLBuffer(const cl_context& context, cl_mem_flags flags, size_t size, cl_mem& mem_obj);
+    cl_int CreateCLProgram(const char** prog_string);
 
-cl_int SetCLKernelArgs(const cl_kernel& context, cl_uint index, size_t size, const void* value);
+    cl_int BuildCLProgram();
 
-cl_int CopyCLDataToMemObj(const cl_command_queue& command_queue, cl_mem& buf,
-    cl_bool blocking, size_t size, const void* value);
+    cl_int CreateCLKernel(const char* kernel_name);
 
-cl_int ReadCLDataFromMemObj(const cl_command_queue& command_queue, cl_mem& buf,
-    cl_bool blocking, size_t size, void* value);
+    cl_int CreateCLBuffer(unsigned char nBuffer, cl_mem_flags flags, size_t size);
 
-cl_int RunCLKernel(const cl_command_queue& command_queue, const cl_kernel& kernel,
-    cl_uint n_dim, size_t* global_work_size, size_t* local_work_size);
+    cl_int SetCLKernelArgs(cl_uint index, size_t size, const void* value);
+
+    cl_int CopyCLDataToMemObj(unsigned char nBuffer, cl_bool blocking, size_t size, const void* value);
+
+    cl_int ReadCLDataFromMemObj(unsigned char nBuffer, cl_bool blocking, size_t size, void* value);
+
+    cl_int RunCLKernel(cl_uint n_dim, size_t* global_work_size, size_t* local_work_size);
+};

@@ -42,7 +42,7 @@ bool FileWork::WriteResultToFile(Matrix<INF>& result)
 	{
 		for (unsigned j = 0; j < result.GetWidth(); j++)
 		{
-			fprintf(resFile, "(%u, %u) - %f\n", i, j, result[i]);
+			fprintf(resFile, "(%u, %u) - %f\n", i, j, result(i, j));
 		}
 	}
 	return true;

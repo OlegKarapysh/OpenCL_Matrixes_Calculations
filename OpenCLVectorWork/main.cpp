@@ -174,55 +174,57 @@ int main()
 	choice = GetPlatformChoice(n_platforms);
 
 	GetCLDevicesList(device_type, platforms_id[choice - 1], devices_id, n_devices);
-	CreateCLContext(n_devices, devices_id, context);
 	OutCLDevicesInfo(devices_id, n_devices);
-	
+
+	OpenCLwork openCLwork(errLogger);
+	openCLwork.CreateCLContext(n_devices, devices_id, context);
+
 	device_num = GetDeviceNumChoice(n_devices);
 
-	CreateCLCommandQueue(devices_id[device_num - 1], context, command_queue);
+	openCLwork.CreateCLCommandQueue(devices_id[device_num - 1], context, command_queue);
 
 	fileWork.ReadFileToChar((TCHAR*)KERNEL_FILE_NAME, file_data, file_size);
 	_tprintf(__TEXT("Kernel text:\n"));
 	printf("%s\n\n", file_data);
 
-	CreateCLProgram(context, (const char**)(&file_data), program);
-	BuildCLProgram(program);
+	openCLwork.CreateCLProgram(context, (const char**)(&file_data), program);
+	openCLwork.BuildCLProgram(program);
 
-	CreateCLKernel(program, KERNEL_NAME, kernel);
+	openCLwork.CreateCLKernel(program, KERNEL_NAME, kernel);
 
 	GetMatrixDimensionsFromUser(width, height, size);
 	InitMatrixes(width, height, matr1, matr2, matr3, matr4, matr5, matrResult);
 
-	CreateCLBuffer(context, CL_MEM_READ_ONLY, sizeof(INF_BUFFER) * size, buf_m1);
-	CreateCLBuffer(context, CL_MEM_READ_ONLY, sizeof(INF_BUFFER) * size, buf_m2);
-	CreateCLBuffer(context, CL_MEM_READ_ONLY, sizeof(INF_BUFFER) * size, buf_m3);
-	CreateCLBuffer(context, CL_MEM_READ_ONLY, sizeof(INF_BUFFER) * size, buf_m4);
-	CreateCLBuffer(context, CL_MEM_READ_ONLY, sizeof(INF_BUFFER) * size, buf_m5);
-	CreateCLBuffer(context, CL_MEM_WRITE_ONLY, sizeof(INF_BUFFER) * size, buf_Res);
+	openCLwork.CreateCLBuffer(context, CL_MEM_READ_ONLY, sizeof(INF_BUFFER) * size, buf_m1);
+	openCLwork.CreateCLBuffer(context, CL_MEM_READ_ONLY, sizeof(INF_BUFFER) * size, buf_m2);
+	openCLwork.CreateCLBuffer(context, CL_MEM_READ_ONLY, sizeof(INF_BUFFER) * size, buf_m3);
+	openCLwork.CreateCLBuffer(context, CL_MEM_READ_ONLY, sizeof(INF_BUFFER) * size, buf_m4);
+	openCLwork.CreateCLBuffer(context, CL_MEM_READ_ONLY, sizeof(INF_BUFFER) * size, buf_m5);
+	openCLwork.CreateCLBuffer(context, CL_MEM_WRITE_ONLY, sizeof(INF_BUFFER) * size, buf_Res);
 
-	SetCLKernelArgs(kernel, 0, sizeof(cl_mem), (void*)(&buf_m1));
-	SetCLKernelArgs(kernel, 1, sizeof(cl_mem), (void*)(&buf_m2));
-	SetCLKernelArgs(kernel, 2, sizeof(cl_mem), (void*)(&buf_m3));
-	SetCLKernelArgs(kernel, 3, sizeof(cl_mem), (void*)(&buf_m4));
-	SetCLKernelArgs(kernel, 4, sizeof(cl_mem), (void*)(&buf_m5));
-	SetCLKernelArgs(kernel, 5, sizeof(cl_mem), (void*)(&buf_Res));
-	SetCLKernelArgs(kernel, 6, sizeof(cl_uint), (void*)(&size));
+	openCLwork.SetCLKernelArgs(kernel, 0, sizeof(cl_mem), (void*)(&buf_m1));
+	openCLwork.SetCLKernelArgs(kernel, 1, sizeof(cl_mem), (void*)(&buf_m2));
+	openCLwork.SetCLKernelArgs(kernel, 2, sizeof(cl_mem), (void*)(&buf_m3));
+	openCLwork.SetCLKernelArgs(kernel, 3, sizeof(cl_mem), (void*)(&buf_m4));
+	openCLwork.SetCLKernelArgs(kernel, 4, sizeof(cl_mem), (void*)(&buf_m5));
+	openCLwork.SetCLKernelArgs(kernel, 5, sizeof(cl_mem), (void*)(&buf_Res));
+	openCLwork.SetCLKernelArgs(kernel, 6, sizeof(cl_uint), (void*)(&size));
 
 	FillMatrByChoice(GetMatrFillFromUser(), width, height, matr1, matr2, matr3, matr4, matr5);
 
 	timeCopy = GetTickCount64();
-	CopyCLDataToMemObj(command_queue, buf_m1, CL_TRUE, sizeof(INF_BUFFER) * size, matr1.GetInternalArray());
-	CopyCLDataToMemObj(command_queue, buf_m2, CL_TRUE, sizeof(INF_BUFFER) * size, matr2.GetInternalArray());
-	CopyCLDataToMemObj(command_queue, buf_m3, CL_TRUE, sizeof(INF_BUFFER) * size, matr3.GetInternalArray());
-	CopyCLDataToMemObj(command_queue, buf_m4, CL_TRUE, sizeof(INF_BUFFER) * size, matr4.GetInternalArray());
-	CopyCLDataToMemObj(command_queue, buf_m5, CL_TRUE, sizeof(INF_BUFFER) * size, matr5.GetInternalArray());
+	openCLwork.CopyCLDataToMemObj(command_queue, buf_m1, CL_TRUE, sizeof(INF_BUFFER) * size, matr1.GetInternalArray());
+	openCLwork.CopyCLDataToMemObj(command_queue, buf_m2, CL_TRUE, sizeof(INF_BUFFER) * size, matr2.GetInternalArray());
+	openCLwork.CopyCLDataToMemObj(command_queue, buf_m3, CL_TRUE, sizeof(INF_BUFFER) * size, matr3.GetInternalArray());
+	openCLwork.CopyCLDataToMemObj(command_queue, buf_m4, CL_TRUE, sizeof(INF_BUFFER) * size, matr4.GetInternalArray());
+	openCLwork.CopyCLDataToMemObj(command_queue, buf_m5, CL_TRUE, sizeof(INF_BUFFER) * size, matr5.GetInternalArray());
 		
 	_tprintf(__TEXT("Starting calculations...\n"));
 	timeCalc = GetTickCount64();
-	RunCLKernel(command_queue, kernel, 1, (size_t*)(&size), NULL);
+	openCLwork.RunCLKernel(command_queue, kernel, 1, (size_t*)(&size), NULL);
 	timeCalc = GetTickCount64() - timeCalc;
 	_tprintf(__TEXT("The end of calculations.\n"));
-	ReadCLDataFromMemObj(command_queue, buf_Res, CL_TRUE, sizeof(INF_BUFFER) * size, matrResult.GetInternalArray());
+	openCLwork.ReadCLDataFromMemObj(command_queue, buf_Res, CL_TRUE, sizeof(INF_BUFFER) * size, matrResult.GetInternalArray());
 	timeCopy = GetTickCount64() - timeCopy;
 	std::cout << "Calculation time is " << timeCalc << "ms and full (with copying) time is " << timeCopy << "ms.\n";
 	WriteResultToFileByChoice(matrResult);
@@ -236,9 +238,9 @@ int main()
 	clReleaseMemObject(buf_Res);
 	clReleaseKernel(kernel);
 	clReleaseProgram(program);
-	free(file_data);
 	clReleaseCommandQueue(command_queue);			
 	clReleaseContext(context);
+	free(file_data);
 	free(devices_id);
 	free(platforms_id);
 	
