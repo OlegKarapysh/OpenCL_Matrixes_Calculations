@@ -148,6 +148,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="ConsoleInterface.cpp" />
     <ClCompile Include="DeviceInfo.cpp" />
     <ClCompile Include="FileWork.cpp" />
     <ClCompile Include="main.cpp" />
@@ -156,6 +157,7 @@
     <ClCompile Include="ErrorLogger.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="ConsoleInterface.h" />
     <ClInclude Include="DeviceInfo.h" />
     <ClInclude Include="DynamicArray.h" />
     <ClInclude Include="ErrorLogger.h" />
