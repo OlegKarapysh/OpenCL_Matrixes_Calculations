@@ -83,13 +83,19 @@ unsigned GetMatrFillFromUser()
 	return choice;
 }
 
-void CreateBuffersForMatrixes(OpenCLwork& openCLwork, unsigned size)
+void CreateBuffersForMatrixes(
+	OpenCLwork& openCLwork, 
+	unsigned size, 
+	Matrix<INF>& matr1, Matrix<INF>& matr2, Matrix<INF>& matr3, 
+	Matrix<INF>& matr4, Matrix<INF>& matr5, Matrix<INF>& matrRes)
 {
-	for (unsigned char i = 0; i < MATRIXES_COUNT - 1; ++i)
-	{
-		openCLwork.CreateCLBuffer(i, CL_MEM_READ_ONLY, sizeof(INF_BUFFER) * size);
-	}
-	openCLwork.CreateCLBuffer(MATRIXES_COUNT - 1, CL_MEM_WRITE_ONLY, sizeof(INF_BUFFER) * size);
+	size_t memSize = sizeof(INF_BUFFER) * size;
+	openCLwork.CreateCLBuffer(0, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, memSize, (void*)matr1.GetInternalArray());
+	openCLwork.CreateCLBuffer(1, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, memSize, (void*)matr2.GetInternalArray());
+	openCLwork.CreateCLBuffer(2, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, memSize, (void*)matr3.GetInternalArray());
+	openCLwork.CreateCLBuffer(3, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, memSize, (void*)matr4.GetInternalArray());
+	openCLwork.CreateCLBuffer(4, CL_MEM_READ_ONLY | CL_MEM_USE_HOST_PTR, memSize, (void*)matr5.GetInternalArray());
+	openCLwork.CreateCLBuffer(5, CL_MEM_WRITE_ONLY | CL_MEM_USE_HOST_PTR, memSize, (void*)matrRes.GetInternalArray());
 }
 
 void SetKernelArgsForMatrixes(OpenCLwork& openCLwork)

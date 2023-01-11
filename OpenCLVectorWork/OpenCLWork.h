@@ -41,7 +41,7 @@ public:
 
     cl_int CreateCLKernel(const char* kernel_name);
 
-    cl_int CreateCLBuffer(unsigned char nBuffer, cl_mem_flags flags, size_t size);
+    cl_int CreateCLBuffer(unsigned char nBuffer, cl_mem_flags flags, size_t size, void* hostBuff);
 
     cl_int SetCLKernelArgs(cl_uint index, size_t size, const void* value);
 

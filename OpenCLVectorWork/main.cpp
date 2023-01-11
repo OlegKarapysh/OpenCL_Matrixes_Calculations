@@ -1,6 +1,4 @@
-﻿// OpenCLVectorWork.cpp : Этот файл содержит функцию "main". Здесь начинается и заканчивается выполнение программы.
-//
-#include "ConsoleInterface.h"
+﻿#include "ConsoleInterface.h"
 
 int main()
 {
@@ -47,7 +45,7 @@ int main()
 	GetMatrixDimensionsFromUser(width, height, size);
 	InitMatrixes(width, height, matr1, matr2, matr3, matr4, matr5, matrResult);
 
-	CreateBuffersForMatrixes(openCLwork, size);
+	CreateBuffersForMatrixes(openCLwork, size, matr1, matr2, matr3, matr4, matr5, matrResult);
 
 	SetKernelArgsForMatrixes(openCLwork);
 

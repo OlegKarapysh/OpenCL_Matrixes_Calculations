@@ -87,7 +87,8 @@ cl_int OpenCLwork::CreateCLKernel(const char* kernel_name)
 	return error;
 }
 
-cl_int OpenCLwork::CreateCLBuffer(unsigned char nBuffer, cl_mem_flags flags, size_t size)
+cl_int OpenCLwork::CreateCLBuffer(
+	unsigned char nBuffer, cl_mem_flags flags, size_t size, void* hostBuff)
 {
 	if (nBuffer >= _nBuffers)
 	{
@@ -96,7 +97,7 @@ cl_int OpenCLwork::CreateCLBuffer(unsigned char nBuffer, cl_mem_flags flags, siz
 	}
 
 	cl_int error;
-	_buffers[nBuffer] = clCreateBuffer(_context, flags, size, NULL, &error);
+	_buffers[nBuffer] = clCreateBuffer(_context, flags, size, hostBuff, &error);
 	if (error != CL_SUCCESS)
 	{
 		_errLogger.LogCantCreateMemObj((int)error);

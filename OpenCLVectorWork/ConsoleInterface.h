@@ -30,7 +30,11 @@ void InitMatrixes(
 
 unsigned GetMatrFillFromUser();
 
-void CreateBuffersForMatrixes(OpenCLwork& openCLwork, unsigned size);
+void CreateBuffersForMatrixes(
+	OpenCLwork& openCLwork,
+	unsigned size,
+	Matrix<INF>& matr1, Matrix<INF>& matr2, Matrix<INF>& matr3, 
+	Matrix<INF>& matr4, Matrix<INF>& matr5, Matrix<INF>& matrRes);
 
 void SetKernelArgsForMatrixes(OpenCLwork& openCLwork);
 
