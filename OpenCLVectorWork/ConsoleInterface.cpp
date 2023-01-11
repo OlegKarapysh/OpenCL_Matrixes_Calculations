@@ -38,10 +38,18 @@ void GetMatrixDimensionsFromUser(
 )
 {
 	using namespace std;
-	cout << "Enter the width of the matrixes: ";
-	cin >> width;
-	cout << "Enter the height of the matrixes: ";
-	cin >> height;
+	do
+	{
+		cout << "Enter the width of the matrixes: ";
+		cin >> width;
+	} while (width < 1);
+	
+	do
+	{
+		cout << "Enter the height of the matrixes: ";
+		cin >> height;
+	} while (height < 1);
+	
 	size = width * height;
 }
 

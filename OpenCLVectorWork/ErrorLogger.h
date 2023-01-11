@@ -1,7 +1,12 @@
 #pragma once
 
+#include "IOutputService.h"
+
 struct ErrorLogger
 {
+    IOutputService* OutputService;
+
+    ErrorLogger(IOutputService* outputService);
     void LogCantCreateFile();
     void LogCantOpenFile();
     void LogCantCreateContext(int error);

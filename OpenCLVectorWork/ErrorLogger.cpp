@@ -1,67 +1,72 @@
-#include "ErrorLogger.h"
 #include <iostream>
+#include "ErrorLogger.h"
+
+ErrorLogger::ErrorLogger(IOutputService* outputService)
+{
+    OutputService = outputService;
+}
 
 void ErrorLogger::LogCantCreateFile()
 {
-    std::cout << "Error while creating file!" << std::endl;
+    OutputService->Out("Error while creating file!\n");
 }
 
 void ErrorLogger::LogCantOpenFile()
 {
-    std::cout << "Error while opening file!" << std::endl;
+    OutputService->Out("Error while opening file!\n");
 }
 
 void ErrorLogger::LogCantCreateContext(int error)
 {
-    std::cout << "Error " << error << " while creating context!" << std::endl;
+    OutputService->Out("Error " + std::to_string(error) + " while creating context!\n");
 }
 
 void ErrorLogger::LogCantCreateCommandQueue(int error)
 {
-    std::cout << "Error " << error << " while creating command queue!" << std::endl;
+    OutputService->Out("Error " + std::to_string(error) + " while creating command queue!\n");
 }
 
 void ErrorLogger::LogCantCreateCLProgram(int error)
 {
-    std::cout << "Error " << error << " while creating OpenCL program!" << std::endl;
+    OutputService->Out("Error " + std::to_string(error) + " while creating OpenCL program!\n");
 }
 
 void ErrorLogger::LogCantBuildCLProgram(int error)
 {
-    std::cout << "Error " << error << " while building OpenCL program!" << std::endl;
+    OutputService->Out("Error " + std::to_string(error) + " while building OpenCL program!\n");
 }
 
 void ErrorLogger::LogCantCreateKernel(int error)
 {
-    std::cout << "Error " << error << " while creating kernel!" << std::endl;
+    OutputService->Out("Error " + std::to_string(error) + " while creating kernel!\n");
 }
 
 void ErrorLogger::LogInvalidBufferNumber()
 {
-    std::cout << "Invalid buffer number, buffer was not created!" << std::endl;
+    OutputService->Out("Invalid buffer number, buffer was not created!\n");
 }
 
 void ErrorLogger::LogCantCreateMemObj(int error)
 {
-    std::cout << "Error " << error << " while creating memory object!" << std::endl;
+    OutputService->Out("Error " + std::to_string(error) + " while creating memory object!\n");
 }
 
 void ErrorLogger::LogCantSetKernelArgs(int error)
 {
-    std::cout << "Error " << error << " while setting kernel args!" << std::endl;
+    OutputService->Out("Error " + std::to_string(error) + " while setting kernel args!\n");
 }
 
 void ErrorLogger::LogCantCopyDataToMemObj(int error)
 {
-    std::cout << "Error " << error << " while copying data to memory object!" << std::endl;
+    OutputService->Out("Error " + std::to_string(error) + " while copying data to memory object!\n");
 }
 
 void ErrorLogger::LogCantReadDataFromMemObj(int error)
 {
-    std::cout << "Error " << error << " while reading data from memory object!" << std::endl;
+    OutputService->Out("Error " + std::to_string(error) + " while reading data from memory object!\n");
 }
 
 void ErrorLogger::LogCantRunKernel(int error)
 {
-    std::cout << "Error " << error << " while trying to run kernel!" << std::endl;
+    OutputService->Out("Error " + std::to_string(error) + " while trying to run kernel!\n");
 }

@@ -4,7 +4,8 @@
 
 int main()
 {
-	ErrorLogger errLogger;
+	ConsoleOutput consoleOut;
+	ErrorLogger errLogger((IOutputService*)&consoleOut);
 	FileWork fileWork(errLogger);
 	cl_uint n_platforms, n_devices;
 	cl_platform_id* platforms_id = NULL;

@@ -8,6 +8,7 @@
 #include "DeviceInfo.h"
 #include "FileWork.h"
 #include "OpenCLwork.h"
+#include "ConsoleOutput.h"
 #include "DEFINES.h"
 
 unsigned char GetPlatformChoice(cl_uint n_platforms);

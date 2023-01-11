@@ -9,7 +9,7 @@
 
 struct FileWork
 {
-	ErrorLogger Logger;
+	ErrorLogger Logger = NULL;
 
 	FileWork(const ErrorLogger& logger);
 	bool ReadFileToChar(TCHAR* file_name, char*& file_data, DWORD& file_size);

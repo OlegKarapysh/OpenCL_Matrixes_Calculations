@@ -13,7 +13,7 @@
 class OpenCLwork
 {
 private:
-    ErrorLogger _errLogger;
+    ErrorLogger _errLogger = NULL;
     unsigned char _nBuffers;
 	cl_uint _nDevices = NULL;
 	cl_device_id* _devicesId = NULL;

@@ -1,7 +1,7 @@
 #pragma once
 #include <CL/cl.h>
-#define DOUBLE
-//#define FLOAT
+//#define DOUBLE
+#define FLOAT
 
 #define	KERNEL_FILE_NAME	__TEXT("VectorAdd.cl")
 #define	KERNEL_NAME			"VectorsAdd"
