@@ -160,12 +160,10 @@
     <ClInclude Include="ConsoleInterface.h" />
     <ClInclude Include="ConsoleOutput.h" />
     <ClInclude Include="DeviceInfo.h" />
-    <ClInclude Include="DynamicArray.h" />
     <ClInclude Include="ErrorLogger.h" />
     <ClInclude Include="FileWork.h" />
     <ClInclude Include="DEFINES.h" />
     <ClInclude Include="IOutputService.h" />
-    <ClInclude Include="Matrix.h" />
     <ClInclude Include="PlatformInfo.h" />
     <ClInclude Include="OpenCLwork.h" />
   </ItemGroup>

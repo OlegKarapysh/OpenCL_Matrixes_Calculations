@@ -3,7 +3,6 @@
 
 #include <conio.h>
 
-#include "Matrix.h"
 #include "PlatformInfo.h"
 #include "DeviceInfo.h"
 #include "FileWork.h"
@@ -15,36 +14,39 @@ unsigned char GetPlatformChoice(cl_uint n_platforms);
 
 unsigned char GetDeviceNumChoice(cl_uint n_devices);
 
-void GetMatrixDimensionsFromUser(unsigned& width, unsigned& height, unsigned& size);
+unsigned GetNaturalNumberFromUser(std::string message);
 
-void InitMatrixes(
-	const unsigned width
-	, const unsigned height
-	, Matrix<INF>& matr1
-	, Matrix<INF>& matr2
-	, Matrix<INF>& matr3
-	, Matrix<INF>& matr4
-	, Matrix<INF>& matr5
-	, Matrix<INF>& result
+void InitVectors(
+	const unsigned size
+	, INF*& a
+	, INF*& b
+	, INF*& c
+	, INF*& d
+	, INF*& e
+	, INF*& f
+	, INF*& res
 );
 
-unsigned GetMatrFillFromUser();
+unsigned GetVectorsFillFromUser();
 
-void CreateBuffersForMatrixes(OpenCLwork& openCLwork, unsigned size);
+void CreateBuffersForVectors(OpenCLwork& openCLwork, unsigned size);
 
-void SetKernelArgsForMatrixes(OpenCLwork& openCLwork);
+void SetKernelArgsForVectors(OpenCLwork& openCLwork);
 
-void FillMatrByChoice(
+void FillVectorsByChoice(
 	unsigned choice
-	, unsigned width
-	, unsigned height
-	, Matrix<INF>& matr1
-	, Matrix<INF>& matr2
-	, Matrix<INF>& matr3
-	, Matrix<INF>& matr4
-	, Matrix<INF>& matr5
+	, unsigned size
+	, INF*& a
+	, INF*& b
+	, INF*& c
+	, INF*& d
+	, INF*& e
+	, INF*& f
 );
+
+void CopyVectorsToMemObjects(OpenCLwork& oCLw, unsigned size,
+	INF*& a, INF*& b, INF*& c, INF*& d, INF*& e, INF*& f);
 
 unsigned char GetFileOutputChoice();
 
-void WriteResultToFileByChoice(Matrix<INF>& result, FileWork fw);
+void WriteResultToFileByChoice(INF*& result, FileWork fw, unsigned size);

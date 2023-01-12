@@ -31,48 +31,31 @@ unsigned char GetDeviceNumChoice(cl_uint n_devices)
 	return device_num;
 }
 
-void GetMatrixDimensionsFromUser(
-	unsigned& width
-	, unsigned& height
-	, unsigned& size
-)
+unsigned GetNaturalNumberFromUser(std::string message)
 {
 	using namespace std;
+	int number = 0;
 	do
 	{
-		cout << "Enter the width of the matrixes: ";
-		cin >> width;
-	} while (width < 1);
-	
-	do
-	{
-		cout << "Enter the height of the matrixes: ";
-		cin >> height;
-	} while (height < 1);
-	
-	size = width * height;
+		cout << message;
+		cin >> number;
+	} while (number < 1);
+
+	return number;
 }
 
-void InitMatrixes(
-	const unsigned width
-	, const unsigned height
-	, Matrix<INF>& matr1
-	, Matrix<INF>& matr2
-	, Matrix<INF>& matr3
-	, Matrix<INF>& matr4
-	, Matrix<INF>& matr5
-	, Matrix<INF>& result
-)
+void InitVectors(const unsigned size, INF*& a, INF*& b, INF*& c, INF*& d, INF*& e, INF*& f, INF*& res)
 {
-	matr1.Resize(width, height);
-	matr2.Resize(width, height);
-	matr3.Resize(width, height);
-	matr4.Resize(width, height);
-	matr5.Resize(width, height);
-	result.Resize(width, height);
+	a = (INF*)malloc(size * sizeof(INF));
+	b = (INF*)malloc(size * sizeof(INF));
+	c = (INF*)malloc(size * sizeof(INF));
+	d = (INF*)malloc(size * sizeof(INF));
+	e = (INF*)malloc(size * sizeof(INF));
+	f = (INF*)malloc(size * sizeof(INF));
+	res = (INF*)malloc(size * sizeof(INF));
 }
 
-unsigned GetMatrFillFromUser()
+unsigned GetVectorsFillFromUser()
 {
 	using namespace std;
 	unsigned choice;
@@ -83,50 +66,52 @@ unsigned GetMatrFillFromUser()
 	return choice;
 }
 
-void CreateBuffersForMatrixes(OpenCLwork& openCLwork, unsigned size)
+void CreateBuffersForVectors(OpenCLwork& openCLwork, unsigned size)
 {
-	for (unsigned char i = 0; i < MATRIXES_COUNT - 1; ++i)
+	for (unsigned char i = 0; i < VECTORS_COUNT - 1; ++i)
 	{
 		openCLwork.CreateCLBuffer(i, CL_MEM_READ_ONLY, sizeof(INF_BUFFER) * size);
 	}
-	openCLwork.CreateCLBuffer(MATRIXES_COUNT - 1, CL_MEM_WRITE_ONLY, sizeof(INF_BUFFER) * size);
+	openCLwork.CreateCLBuffer(VECTORS_COUNT - 1, CL_MEM_WRITE_ONLY, sizeof(INF_BUFFER) * size);
 }
 
-void SetKernelArgsForMatrixes(OpenCLwork& openCLwork)
+void SetKernelArgsForVectors(OpenCLwork& openCLwork)
 {
-	for (unsigned char i = 0; i < MATRIXES_COUNT; ++i)
+	for (unsigned char i = 0; i < VECTORS_COUNT; ++i)
 	{
 		openCLwork.SetCLKernelArgsForBuffer(i, sizeof(cl_mem));
 	}
 }
 
-void FillMatrByChoice(
-	unsigned choice
-	, unsigned width
-	, unsigned height
-	, Matrix<INF>& matr1
-	, Matrix<INF>& matr2
-	, Matrix<INF>& matr3
-	, Matrix<INF>& matr4
-	, Matrix<INF>& matr5
-)
+void FillVectorsByChoice(unsigned choice, unsigned size, 
+	INF*& a, INF*& b, INF*& c, INF*& d, INF*& e, INF*& f)
 {
 	switch (choice)
 	{
 	case FILL_FIXED:
-		matr1.FillFixed(width, height, (INF)FIXED_NUM);
-		matr2.FillFixed(width, height, (INF)FIXED_NUM);
-		matr3.FillFixed(width, height, (INF)FIXED_NUM);
-		matr4.FillFixed(width, height, (INF)FIXED_NUM);
-		matr5.FillFixed(width, height, (INF)FIXED_NUM);
+		for (unsigned i = 0; i < size; ++i)
+		{
+			a[i] = b[i] = c[i] = d[i] = e[i] = f[i] = (INF)FIXED_NUM;
+		}
 		break;
 	default:
-		matr1.FillRandom(width, height, (INF)FIXED_NUM);
-		matr2.FillRandom(width, height, (INF)FIXED_NUM);
-		matr3.FillRandom(width, height, (INF)FIXED_NUM);
-		matr4.FillRandom(width, height, (INF)FIXED_NUM);
-		matr5.FillRandom(width, height, (INF)FIXED_NUM);
+		srand((unsigned)time(NULL));
+		for (unsigned i = 0; i < size; ++i)
+		{
+			a[i] = b[i] = c[i] = d[i] = e[i] = f[i] = (INF)(rand() + 1);
+		}
 	}
+}
+
+void CopyVectorsToMemObjects(OpenCLwork& oCLw, unsigned size, 
+	INF*& a, INF*& b, INF*& c, INF*& d, INF*& e, INF*& f)
+{
+	oCLw.CopyCLDataToMemObj(0, CL_TRUE, sizeof(INF_BUFFER) * size, a);
+	oCLw.CopyCLDataToMemObj(1, CL_TRUE, sizeof(INF_BUFFER) * size, b);
+	oCLw.CopyCLDataToMemObj(2, CL_TRUE, sizeof(INF_BUFFER) * size, c);
+	oCLw.CopyCLDataToMemObj(3, CL_TRUE, sizeof(INF_BUFFER) * size, d);
+	oCLw.CopyCLDataToMemObj(4, CL_TRUE, sizeof(INF_BUFFER) * size, e);
+	oCLw.CopyCLDataToMemObj(5, CL_TRUE, sizeof(INF_BUFFER) * size, f);
 }
 
 unsigned char GetFileOutputChoice()
@@ -141,7 +126,7 @@ unsigned char GetFileOutputChoice()
 	return choice;
 }
 
-void WriteResultToFileByChoice(Matrix<INF>& result, FileWork fw)
+void WriteResultToFileByChoice(INF*& result, FileWork fw, unsigned size)
 {
 	using namespace std;
 
@@ -151,7 +136,7 @@ void WriteResultToFileByChoice(Matrix<INF>& result, FileWork fw)
 
 	if (writeToFileChoice == 'y' || writeToFileChoice == 'Y')
 	{
-		fw.WriteResultToFile(result);
+		fw.WriteResultToFile(result, size);
 		cout << "The result has been written to file.";
 		return;
 	}

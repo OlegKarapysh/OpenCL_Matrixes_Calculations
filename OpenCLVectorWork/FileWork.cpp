@@ -28,7 +28,7 @@ bool FileWork::ReadFileToChar(TCHAR* file_name, char*& file_data, DWORD& file_si
 	return file_size == read_size;
 }
 
-bool FileWork::WriteResultToFile(Matrix<INF>& result)
+bool FileWork::WriteResultToFile(INF*& result, unsigned size)
 {
 	FILE* resFile = _tfopen(OUT_FILE_NAME, __TEXT("w+"));
 	if (resFile == NULL)
@@ -37,14 +37,9 @@ bool FileWork::WriteResultToFile(Matrix<INF>& result)
 		return false;
 	}
 
-	fprintf(resFile, "The list of pairs: matrix element index - result value:\n");
-	for (unsigned i = 0; i < result.GetHeight(); i++)
-	{
-		for (unsigned j = 0; j < result.GetWidth(); j++)
-		{
-			fprintf(resFile, "(%u, %u) - %f\n", i, j, result(i, j));
-		}
-	}
+	fprintf(resFile, "The list of pairs: vector index - result value:\n");
+	for (unsigned i = 0; i < size; i++)
+		fprintf(resFile, "%u - %f\n", i, result[i]);
 	return true;
 }
 

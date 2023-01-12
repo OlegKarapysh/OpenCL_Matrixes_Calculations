@@ -4,6 +4,7 @@ __kernel void VectorsAdd(
   __global const double* c, 
   __global const double* d, 
   __global const double* e, 
+  __global const double* f,
   __global double* res, 
   unsigned size)
 {
@@ -13,7 +14,7 @@ __kernel void VectorsAdd(
   // bound check (equivalent to the limit on a 'for' loop for standard/serial C code
   if (GID < size)
   { 
-    res[GID] = a[GID] + b[GID] * c[GID] - d[GID] - e[GID];
+    res[GID] = a[GID] + b[GID] * c[GID] - d[GID] - e[GID] - f[GID];
   }
   
 }
