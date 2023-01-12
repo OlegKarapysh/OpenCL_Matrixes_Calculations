@@ -15,7 +15,10 @@ void OutCLDevicesInfo(cl_device_id* devices_id, const cl_uint& n_devices)
 		CL_DEVICE_VENDOR,
 		CL_DEVICE_VERSION,
 		CL_DRIVER_VERSION,
-		CL_DEVICE_EXTENSIONS
+		CL_DEVICE_EXTENSIONS,
+
+		CL_DEVICE_PROFILE,
+		CL_DEVICE_OPENCL_C_VERSION
 	};
 
 	const TCHAR* DevAttrNamesChar[] = 
@@ -24,7 +27,10 @@ void OutCLDevicesInfo(cl_device_id* devices_id, const cl_uint& n_devices)
 		__TEXT("Vendor"),
 		__TEXT("Device Version"), 
 		__TEXT("Driver Version"),
-		__TEXT("Extensions") 
+		__TEXT("Extensions"),
+
+		__TEXT("Profile"),
+		__TEXT("OpenCL C-version")
 	};
 
 	const cl_device_info DevAttrTypesUINT[] = 
@@ -33,6 +39,9 @@ void OutCLDevicesInfo(cl_device_id* devices_id, const cl_uint& n_devices)
 		CL_DEVICE_MAX_COMPUTE_UNITS,
 		CL_DEVICE_MAX_SAMPLERS,
 		CL_DEVICE_MAX_WORK_ITEM_DIMENSIONS,
+
+		CL_DEVICE_PREFERRED_VECTOR_WIDTH_INT,
+		CL_DEVICE_PREFERRED_VECTOR_WIDTH_FLOAT
 	};
 
 	const cl_device_info DevAttrTypesULONG[] = 
@@ -40,13 +49,16 @@ void OutCLDevicesInfo(cl_device_id* devices_id, const cl_uint& n_devices)
 		CL_DEVICE_GLOBAL_MEM_SIZE,
 		CL_DEVICE_GLOBAL_MEM_CACHE_SIZE,
 		CL_DEVICE_MAX_CONSTANT_BUFFER_SIZE,
-		CL_DEVICE_MAX_MEM_ALLOC_SIZE
+		CL_DEVICE_MAX_MEM_ALLOC_SIZE,
 	};
 
 	const cl_device_info DevAttrTypesSIZE_T[] = 
 	{
 		CL_DEVICE_MAX_PARAMETER_SIZE,
-		CL_DEVICE_MAX_WORK_GROUP_SIZE
+		CL_DEVICE_MAX_WORK_GROUP_SIZE,
+
+		CL_DEVICE_IMAGE2D_MAX_WIDTH,
+		CL_DEVICE_PROFILING_TIMER_RESOLUTION
 	};
 
 	const TCHAR* DevAttrNamesUINT[] = 
@@ -54,7 +66,10 @@ void OutCLDevicesInfo(cl_device_id* devices_id, const cl_uint& n_devices)
 		__TEXT("Maximal frequency (MHz)"), 
 		__TEXT("Maximal compute units number"),
 		__TEXT("Maximal number of samplers that can be used in kernel"),
-		__TEXT("Maximum dimensions that specify the global and local work-item IDs used by the data parallel execution mode")
+		__TEXT("Maximum dimensions that specify the global and local work-item IDs used by the data parallel execution mode"),
+		
+		__TEXT("Preferred vector width for int type"),
+		__TEXT("Preferred vector width for float type")
 	};
 	const TCHAR* DevAttrNamesULONG[] = 
 	{ 
@@ -67,7 +82,10 @@ void OutCLDevicesInfo(cl_device_id* devices_id, const cl_uint& n_devices)
 	const TCHAR* DevAttrNamesSIZE_T[] = 
 	{ 
 		__TEXT("Maximal size of arguments that can be passed to kernel (bytes)"),
-		__TEXT("Maximal number of work-items in a work-group executing a kernel using the data parallel execution model")
+		__TEXT("Maximal number of work-items in a work-group executing a kernel using the data parallel execution model"),
+		
+		__TEXT("Maximal width of 2D image in pixels"),
+		__TEXT("Device profiling timer resolution in nanoseconds")
 	};
 
 
@@ -77,7 +95,6 @@ void OutCLDevicesInfo(cl_device_id* devices_id, const cl_uint& n_devices)
 	cl_ulong value_ulong;
 	size_t value_size_t;
 	cl_device_type device_type;
-
 
 	for (cl_uint i_dev = 0; i_dev < n_devices; i_dev++)
 	{
